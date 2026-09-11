@@ -4,7 +4,7 @@
 > decoding on bandwidth-constrained hardware — the research that led to our
 > final config (fa on, n-max 12, p-min 0.6, parallel 1 → 26.48 tok/s).
 >
-> 背景：Thor 车机因水冷渗漏停机检修，利用停机窗口完成的社区经验调研。
+> 背景：Thor 板因水冷渗漏停机检修，利用停机窗口完成的社区经验调研。
 > 目标：decode 25.89 tok/s（社区 QUASAR+MTP K7+Graph 水平）
 > 调研时状态：QUASAR QAT-NVFP4 + MTP K3 + q8_0 KV @64K = 11.42 tok/s
 

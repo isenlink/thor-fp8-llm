@@ -14,7 +14,7 @@
 
 | 项 | 规格 |
 |---|---|
-| 型号 | NVIDIA DRIVE Thor（p3960-0010，量产车智驾域控拆机件） |
+| 型号 | NVIDIA DRIVE Thor（p3960-0010 / Tegra264） |
 | 架构 | aarch64，12 核（Blackwell SM101a，CUDA Compute 10.1a） |
 | GPU | 集成 Blackwell 架构 GPU（Tegra 统一内存，无独立显存） |
 | 物理内存 | 58 GiB 可见（MemTotal 61524140 kB，另有 ~19G 固件 carveout 在 MemTotal 之外） |
@@ -23,7 +23,7 @@
 | 系统 | DriveOS 7.0.3（build 40740537），根分区只读 + overlay 可写层 |
 | 网络 | USB 千兆网卡（DHCP）+ 车载 mgbe 多路 VLAN |
 | 温控 | 空载 tj 61-66°C，满载推理 <75°C（75°C 为人工熔断线） |
-| USB 串口 | 板载 CH34x 双串口（115200 8N1）：口1=主 SoC Linux 控制台，口2=MCU/AURIX nvshell。注意：未解锁车机实测两口均静默（控制台被禁用）——**串口静默 ≠ 接线/硬件问题** |
+| USB 串口 | 板载 CH34x 双串口（115200 8N1）：口1=主 SoC Linux 控制台，口2=MCU/AURIX nvshell。注意：默认量产固件下实测两口均静默（控制台被禁用）——**串口静默 ≠ 接线/硬件问题** |
 
 **存储布局：**
 

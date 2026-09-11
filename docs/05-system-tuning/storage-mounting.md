@@ -6,7 +6,7 @@
 >
 > 日期：2026-09-08（本仓库版：脱敏整理）
 
-> 背景：DriveOS 根文件系统**只读**（车机安全设计），/mnt、/ 下均不可创建目录。可写路径为 overlay：/media、/home、/var、/etc。
+> 背景：DriveOS 根文件系统**只读**（安全设计），/mnt、/ 下均不可创建目录。可写路径为 overlay：/media、/home、/var、/etc。
 
 ## 一、USB 固态盘挂载（含踩坑）
 

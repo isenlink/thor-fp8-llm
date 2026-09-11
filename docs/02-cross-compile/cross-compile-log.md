@@ -4,7 +4,7 @@
 
 > 日期：2026-09-07 夜 ~ 09-08 晨
 > 主机：x86主机（笔记本），Debian 13, i7-4600U (4C4T), 11GB RAM
-> 目标板：某Thor板（某Thor板 域控, p3960-0010 / Tegra264），DriveOS 7.0.3, CUDA 12.8, aarch64
+> 目标板：NVIDIA DRIVE Thor 域控板（p3960-0010 / Tegra264），DriveOS 7.0.3, CUDA 12.8, aarch64
 > 成果：llama.cpp 0.4.0-dev 全套（91 个二进制，含 CUDA sm_101a 后端）交叉编译成功，板端 GPU 推理验证通过
 
 ---
@@ -38,7 +38,7 @@ Qwen3-4B Q4_K_M（2.32GiB），ngl=99 全 GPU offload：
 4. `/tmp` 是 30G tmpfs（RAM 盘，重启丢失，可作临时工作区）
 5. `/home` 是 974M overlay（777M 可用，放编译产物可以，放模型不行）
 6. 板载数据分区 (105G) 本身 rw 挂载，但目录属主不是运行用户，写不进——需 sudo 一次：
-   `sudo mkdir -p /data_partition/ai_workspace && sudo chown -R user:user /data_partition/ai_workspace`
+   `sudo mkdir -p /ai_workspace && sudo chown -R user:user /ai_workspace`
 7. 内存真相：used 21Gi 里用户态进程只占 <200MB，大头是内核 carveout（设备树级保留，GPU 可见 20GiB vs 物理 58GiB 的差额），停用户态服务无法释放这块
 8. 运行服务 29 个：du_*（dulink_router/dumaster/dutii/du_decomp/dubhc_plugin/du_auth）、nv_*（ist_client/nvpkcs11_kat/nvlog_mgr 等）是车厂组件，单个 6-23MB
 
@@ -200,7 +200,7 @@ scp Qwen3-4B-Q4_K_M.gguf user@<LAN-IP>:/tmp/
 |---|---|---|---|
 | 板 /tmp/thor-tools/ | 30G tmpfs | 工具+模型临时区 | ✗ 重启丢 |
 | 板 /home/user/ | 974M overlay(777M 可用) | 编译产物备份 | 待重启验证 |
-| 板 /data_partition/ | 105G | 模型/工作区终 destino | ✓ 需 sudo 授权 |
+| 板 / | 105G | 模型/工作区终 destino | ✓ 需 sudo 授权 |
 | 主机 ~/thor-work/ | ~2GB | 完整工具箱+源码+模型 | ✓ 可打包复用 |
 
 ## 七、下次编译加速路线
@@ -223,9 +223,9 @@ scp Qwen3-4B-Q4_K_M.gguf user@<LAN-IP>:/tmp/
 | 账号名 | 板端登录用户、分区属主等真实账号名 | 统一替换为 `user` |
 | 凭据 | 部署命令中带明文密码的 sshpass 用法 | 已删除，命令改为普通 `scp` 并加注标记 |
 | 本机路径 | 宿主机真实用户目录 `/home/<user>/` | 改为 `/home/user/` 或 `~/` |
-| 板载分区路径 | 含厂商前缀的板载分区名 | 改为 `/data_partition/`（属主账号信息一并脱敏） |
+| 板载分区路径 | 含厂商前缀的板载分区名 | 改为 `/`（属主账号信息一并脱敏） |
 | 板卡 SN 号 | 原文未出现 | 无需处理 |
 | 渠道商/解锁/刷机/锁机内容 | 原文未出现 | 无需处理 |
 | 人名 | 原文未出现（技术实录内容） | 无需处理 |
 
-保留说明：板卡型号出处 "某Thor板 (p3960-0010 / Tegra264)" 属公开型号信息，按整理规则予以保留；文中 du_*/nv_* 车厂服务名仅作运行环境事实描述，不含内部凭据，予以保留。
+保留说明：本笔记仅讨论 Thor 平台上的 LLM 部署与优化，不涉及具体车辆品牌/车型信息。文中 du_*/nv_* 为板端系统预置服务名，仅作运行环境事实描述，不含内部凭据，予以保留。

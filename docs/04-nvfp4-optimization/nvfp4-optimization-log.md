@@ -2,7 +2,7 @@
 
 > A complete engineering log of optimizing NVFP4-quantized LLM inference on an NVIDIA DRIVE Thor automotive domain controller, covering FP8→GGUF conversion obstacles, numpy/torch ABI pitfalls, and speculative-decoding tuning that raised decode throughput from 11.42 to 26.48 tok/s.
 
-# Thor 车载域控 NVFP4 推理优化——完整操作实录与复盘
+# Thor 域控板 NVFP4 推理优化——完整操作实录与复盘
 
 > 日期：2026-09-08（全天，含停机检修窗口）
 > 参与：作者 + AI助手 + 其他只读助手（user@板 / user@转换主机）
@@ -271,4 +271,4 @@ WantedBy=multi-user.target
 - **人名**：1 位真实人名 + 所属部门 → "作者"；AI 助手产品名 → "AI助手"
 - **疑似内部项目代号**：后续路线中 1 处内部项目代号 → 以模型系列名" DFlash2"指代
 - **本文件中未发现**以下类型敏感内容，故无需对应处理：板卡 SN 号、密码/token/凭据（未加 "[已移除凭据]" 标记）、渠道商/解锁/刷机/锁机相关段落
-- **保留说明**：`/` 为板端标准路径，不含身份信息，按规则保留；GitHub/镜像站等公开 URL 保留
+- **路径代称说明**：`/` 为板载数据分区挂载点在本笔记中的**代称**。DriveOS 板上该分区（约 105G，板载 vblkdev，与只读根分区独立）的原路径名含车辆品牌字样，为保持品牌中立统一写作 `/`。读者在自己板卡上执行 `ls /` 即可看到真实分区名；文中所有 `/ai_workspace/...` 对应"数据分区下的 AI 工作区"。GitHub/镜像站等公开 URL 原样保留。
