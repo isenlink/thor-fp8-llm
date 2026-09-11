@@ -6,6 +6,8 @@
 > Grassroots field notes: deploying and optimizing llama.cpp GPU inference on an
 > NVIDIA DRIVE Thor automotive domain controller, from cross-compilation to
 > NVFP4 quantization, all numbers measured on real hardware.
+>
+> [English version / 英文版本](README.en.md)
 
 ## Why this repo exists / 为什么有这个仓库
 
@@ -47,7 +49,7 @@ docs/
   04-nvfp4-optimization/  NVFP4 量化路线实验记录（含失败实验 MTP K7）
   05-system-tuning/       GPU 大页池扩容与固化、overlay 持久化方法论、温度管理
   06-benchmarks/          各阶段基准数据与复现命令
-scripts/                  板端/主机实用脚本
+scripts/                  板端/主机实用脚本（串口探测、GPU 池检查）
 ```
 
 ## Status / 状态
