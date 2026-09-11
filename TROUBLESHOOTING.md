@@ -20,6 +20,7 @@
 | 板子上找不到 curl / dhclient / parted / fdisk / mkfs / mount.nfs | [A4](#a4-板上缺常用工具) |
 | 网络断了重启 networkd 才恢复；或有线口抢了默认路由导致断网 | [A5](#a5-网络自己断了路由被抢) |
 | 温度飙高 / 需要监控 GPU 但没有 nvidia-smi | [A6](#a6-温度与-gpu-监控) |
+| 运行中突然断电，MCU 串口先打 `0x40B6` 再 `0x40B4` | [A8](#a8-高温断电事件链0x40b6--0x40b4真实温度阈值表) |
 | 摘下 USB 设备后，同一链路上的其他设备消失 | [A7](#a7-usb-热插拔导致链路设备消失) |
 | `Could not find nvcc, please set CUDAToolkit_ROOT` | [B1](#b1-cmake-找不到-cuda-toolkit) |
 | `CUDA::cublas` / `CUDA::cuda_driver` target 不存在 | [B2](#b2-cuda-target-缺失cublas--cuda_driver) |
@@ -131,6 +132,48 @@ sudo reboot        # 重启一律用 reboot，不要硬断电
 - 板上**没有** `nvidia-smi` / `nvtop`，用 **`tegrastats`**（`GR3D_FREQ` = GPU 占用率）
 - 空载 tj 61-66°C 正常；**>75°C 暂停重负载**（我们的人工熔断线）
 - 满载推理 72-74°C（被动散热，健康）
+
+📄 详见 [docs/01-hardware-recon/hardware-archive.md](docs/01-hardware-recon/hardware-archive.md) §3
+
+### A8. 高温断电事件链：0x40B6 → 0x40B4（真实温度阈值表）
+
+**症状**：运行中板子突然整机断电，MCU 串口（NvShell）先打高温预警
+`0x40B6`，随后打断电码 `0x40B4`，无任何 Linux 侧日志（断电发生在内核
+有机会落盘之前）。
+
+**我们的一次真实事件**（水冷失效 + OOM 满载）：
+
+```
+20:48  MCU 高温预警 0x40B6
+22:26  MCU 断电 0x40B4（推算已过 114°C）
+```
+
+**真实温度阈值表**（来自 NVIDIA IGX/Thor 官方文档核定，2026-09-10）：
+
+| 状态 | 温度 | 说明 |
+|---|---|---|
+| 水冷正常 idle | 60-66°C | 实测典型区间 |
+| **负载 80°C** | **正常工作区间** | 不是异常，无需紧张 |
+| 满载推理 80-95°C | 正常（水冷压得住的前提下） | 离降频线余量充足 |
+| 109°C | 软件降频 | |
+| 113°C | 硬件降频 | |
+| **114.5-115°C** | **关机** | MCU Safetyservice 抢先断电 |
+| Linux zone critical | 125°C | 永远轮不到它，MCU 先动手 |
+
+**关键认知**：
+- **DRIVE OS 没有渐进降频缓冲**——温度到线就是直接断电，不像桌面 GPU
+  先降频挣扎很久。监控必须盯 MCU 串口侧（热点传感器 = EXT0/TMP451，
+  正常 52-53°C），只看 Linux 侧 tegrastats 会漏掉预警窗口。
+- 断电后 `/etc` overlay 可能被吞（见 [A2](#a2-硬断电后-etc-改动消失)），
+  高温断电 = 变相脏断电。
+- ⚠️ 0x40B6/0x40B4 事件链全网无公开资料（GitHub/论坛均搜不到），
+  本条是独份记录。阈值数据以官方文档为准，事件链为我们实测。
+
+**解法**：
+1. 确保水冷在位且真正工作（我们的失效案例：水冷泵停转）；
+2. 长任务盯 MCU 串口温度而非只盯 Linux 侧；
+3. 设人工熔断线（我们用 75°C，保守但安全——注意这是**自定纪律**，
+   板子真实降频线在 109°C，不要混淆）。
 
 📄 详见 [docs/01-hardware-recon/hardware-archive.md](docs/01-hardware-recon/hardware-archive.md) §3
 
