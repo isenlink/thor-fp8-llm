@@ -13,6 +13,10 @@ DRIVE Thor 的民间本地 LLM 部署资料几乎为零：官方只提供 DriveO
 社区讨论停留在"能不能跑"。我们在 2026-09 用约一周时间从零摸索走通了全链路，
 踩过的坑、失败实验、实测数据都完整记录在这里，希望能省下下一个人的摸索时间。
 
+> **🔧 遇到问题请先看 [TROUBLESHOOTING.md](TROUBLESHOOTING.md)** —
+> 按症状索引的踩坑速查表，收录 30 条实际踩过的坑（含英文报错原文，便于搜索命中），
+> 覆盖交叉编译、模型转换、推理调优、系统/挂载四大类。
+
 ## Hardware / 硬件
 
 | 项目 | 规格 |
@@ -35,6 +39,7 @@ DRIVE Thor 的民间本地 LLM 部署资料几乎为零：官方只提供 DriveO
 ## Repo structure / 目录结构（整理中）
 
 ```
+TROUBLESHOOTING.md        踩坑速查（症状索引，含报错原文 ← 优先看这个）
 docs/
   01-hardware-recon/      板端环境摸底：显存真相、carveout、tmpfs、存储布局
   02-cross-compile/       x86 主机交叉编译 aarch64 + sm_101a 全套工具链
