@@ -33,7 +33,7 @@ DRIVE Thor 的民间本地 LLM 部署资料几乎为零：官方只提供 DriveO
 | llama.cpp 交叉编译 | 0.4.0-dev 全套 91 个二进制，含 CUDA sm_101a 后端 ✅ |
 | Qwen3-4B Q4_K_M 基准 | pp128 1516 tok/s / tg64 40.2 tok/s（ngl=99 全 GPU） |
 | Qwen3.8-27B NVFP4 | decode **26.48 tok/s**（超社区 25.89 目标），accuracy 85.9% |
-| GPU 大页池 | 20G → 46G 扩容并三层固化 |
+| GPU 大页池 | 20G → 42G（后续扩至 46G）并固化 |
 | 满载温度 | 72–74°C（被动散热，稳定） |
 
 ## Repo structure / 目录结构（整理中）
