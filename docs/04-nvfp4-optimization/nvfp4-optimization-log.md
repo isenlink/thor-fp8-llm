@@ -5,8 +5,8 @@
 # Thor 域控板 NVFP4 推理优化——完整操作实录与复盘
 
 > 日期：2026-09-08（全天，含停机检修窗口）
-> 参与：作者 + AI助手 + 其他只读助手（user@板 / user@转换主机）
-> 关联文档：《Thor板_硬件档案与测试数据_2026-09-08.md》《Thor_NVFP4优化情报_停机研究_2026-09-08.md》
+> 参与：作者 + AI 助手协作
+> 关联文档：[硬件档案](../01-hardware-recon/hardware-archive.md)、[社区情报调研](./community-intelligence.md)
 > 目标：NVFP4 量化路线 decode ≥ 25.89 tok/s（社区网友水平）
 > **结果：26.48 tok/s，目标达成 ✅**
 
@@ -169,7 +169,7 @@ https://github.com/sudoingX/qwen38-mtp
 
 **信息源 3**：vLLM 官方 recipe（QUASAR acceptance 基线 0.897）
 
-完整调研见《Thor_NVFP4优化情报_停机研究_2026-09-08.md》。
+完整调研见 [community-intelligence.md](./community-intelligence.md)。
 
 ### 阶段 8：修复后实验矩阵（一次命中目标）
 
