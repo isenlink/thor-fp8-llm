@@ -36,6 +36,8 @@ experiments, and the measured data — to save the next person the same groping.
 | llama.cpp cross-compile | 0.4.0-dev, all 91 binaries incl. CUDA sm_101a backend ✅ |
 | Qwen3-4B Q4_K_M baseline | pp128 1516 tok/s / tg64 40.2 tok/s (ngl=99, full GPU) |
 | Qwen3.8-27B NVFP4 | decode **26.48 tok/s** (beat the 25.89 community target), acceptance 85.9% |
+| 128K long-context decode | 16.4±0.7 tok/s (production baseline, MTP K7 + F8 attn + NVFP4 MLP) |
+| B3 kernel optimization (standalone) | NVFP4 MMVQ gemv 144→207 GB/s (+44%), root cause = repeated L2 reads of the y vector (see 04/) |
 | GPU hugepage pool | 20G → 42G (later expanded to 46G), persisted |
 | Full-load temperature | 72–74 °C (passive cooling, stable) |
 
@@ -47,10 +49,10 @@ docs/
   01-hardware-recon/      Board environment recon: memory truth, carveout, tmpfs, storage layout
   02-cross-compile/       x86 host cross-compiling aarch64 + sm_101a full toolchain (11 pitfalls)
   03-model-conversion/    FP8 → GGUF conversion, three-layer obstacles
-  04-nvfp4-optimization/  NVFP4 quantization + speculative-decoding tuning (incl. failed MTP K7)
+  04-nvfp4-optimization/  NVFP4 quantization + speculative-decoding tuning (incl. failed MTP K7, B3 kernel-level optimization decision chain + microbench breakdown)
   05-system-tuning/       Hugepage pool expansion & persistence, overlay, storage, temperature
   06-benchmarks/          Per-stage benchmarks + community comparison
-scripts/                  Board/host helper scripts (UART probe, GPU pool check)
+scripts/                  Board/host helper scripts (UART probe, GPU pool check, B3 kernel microbench suite)
 ```
 
 ## The headline optimization (TL;DR)
