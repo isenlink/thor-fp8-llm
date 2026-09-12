@@ -9,6 +9,10 @@
 |---|---|---|---|
 | `uart_probe.py` | 串口探测：自动发现 ACM 设备 → 115200 8N1 → 断言 DTR/RTS → 发回车 → 监听 | 主机（接板串口的机器） | `pyserial` |
 | `gpu_pool_check.py` | GPU 大页池 / 统一内存余量检查（板上无 nvidia-smi 的替代） | 板端 | 无（纯标准库） |
+| `b3-standalone.cu` | B3 kernel standalone bench（hot/cold 双模式 + Q8_0 对照） | 板端（交叉编译） | CUDA |
+| `b3-microbench2~6.cu` | kernel 级流水线拆解 microbench（访存/LUT/dp4a/y 复用/LUT vs 算术解码） | 板端（交叉编译） | CUDA |
+| `r30-rollprof-128k.sh` | 128K decode 滚动窗口 op_prof 拆账（perj + K12/p0.5 账本） | 板端 | llama-server |
+| `r32-eager-prof-128k.sh` | 128K 全 eager（关 CUDA graph）MTP step 墙钟构成 | 板端 | llama-server |
 
 ## uart_probe.py
 
