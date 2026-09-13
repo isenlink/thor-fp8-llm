@@ -88,3 +88,7 @@ P2：小算子融合只作为补充。R32 里 CPY/CONCAT/MUL/RMS/ROPE/SET_ROWS �
   - `evidence/r32-perj-k12p05/`
   - `evidence/microbench/b3-microbench6-nvfp4-arith.log`
   - `evidence/gatepre/`
+
+---
+
+[整理者注] 本文档由工作笔记脱敏改写：板载数据分区路径改 `/` 代称（DriveOS 板上该分区约 105G、板载 vblkdev、与只读根分区独立，原路径名含车辆品牌字样，为保持品牌中立统一写作 `/`，读者在自己板卡上执行 `ls /` 即可看到真实分区名）。技术数据（性能数字、hash、参数、命令）100% 保留。

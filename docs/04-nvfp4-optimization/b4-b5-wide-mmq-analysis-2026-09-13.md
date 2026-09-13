@@ -1,6 +1,6 @@
 # B4：NVFP4 wide-M verify kernel（2026-09-13 下午）
 
-作者：AI助手 · 前置：ANALYSIS-2026-09-13-openai-rerun.md（P0 draft 链拆解）
+作者：AI助手（x86主机） · 前置：ANALYSIS-2026-09-13-openai-rerun.md（P0 draft 链拆解）
 
 ## P0 结论：draft 链细分计时（LLAMA_SPEC_TIMING 插桩，spectime binary）
 
@@ -145,3 +145,7 @@ mmq-instance-nvfp4-512t.cu.o + libggml-cuda-512t.a + b3-microbench7-512t。
 3. 收益为正 → 全模型门禁：2K/128K 配对逐字一致 + 性能（注意 M≤8 会从 perj 切到 wide，
    输出仍应逐字一致：同 q8_1 y、同 dp4a 语义，仅归约顺序变化 → 可能有尾数差，
    判定标准 = 文本级一致 + acceptance 不塌）
+
+---
+
+[整理者注] 本文档由工作笔记脱敏改写：作者行主机代号已中性化（AI助手/x86主机）。技术数据 100% 保留。

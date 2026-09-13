@@ -1,6 +1,6 @@
 # 板1 GPU 通道死锁事故全记录与预防规则
 
-作者：AI助手 · 2026-09-13 · 状态：**已定论，作为后续一切 GPU 实验的强制约束**
+作者：AI助手（x86主机） · 2026-09-13 · 状态：**已定论，作为后续一切 GPU 实验的强制约束**
 
 ## 一、三次事故对照表
 
@@ -8,7 +8,7 @@
 |---|---|---|---|
 | 触发进程 | b3-microbench4（+b3-correctness 同道崩） | B4 wide-M kernel v1（b3 系列） | b3-correctness2-i64o2 |
 | 改动类型 | **新 kernel**（手写 NVFP4 vec_dot 微基准） | **新 kernel**（B4 wide dp4a） | **仅 config 常量**（mmq-config-ampere.cuh：I=64 + occupancy=2） |
-| 根因 | 自定义 block_q8_1 结构体 d 字段按 2B 算（实为 4B ggml_half2）→ qs 落到 offset 2 非 4B 对齐 → `(const int*)qs` 非对齐强转 → GPU fault | block_q8_1 的 qs 字段用 16B 向量加载（int4），但 qs 仅 4B 对齐 → GR fault（值守方从串口日志定位，协作邮局 id=40） | kernel hang（D 态卡 nvgpu 通道等待）+ error notifier 13；同一构建族 k512/k1024/ao2/512t/o2 全部正常，唯独 (I=64, occ=2) 组合挂 |
+| 根因 | 自定义 block_q8_1 结构体 d 字段按 2B 算（实为 4B ggml_half2）→ qs 落到 offset 2 非 4B 对齐 → `(const int*)qs` 非对齐强转 → GPU fault | block_q8_1 的 qs 字段用 16B 向量加载（int4），但 qs 仅 4B 对齐 → GR fault（值守方从串口日志定位） | kernel hang（D 态卡 nvgpu 通道等待）+ error notifier 13；同一构建族 k512/k1024/ao2/512t/o2 全部正常，唯独 (I=64, occ=2) 组合挂 |
 | 内核签名 | error notifier 13 → irq/296-s-nvgpu D 态 → hung task 120→604s → RCU stall | 同左 | 同左（14:56:59 监控捕获 notifier） |
 | 恶化窗口 | ~25 分钟 | ~25 分钟（11:28 发作，11:55 失联） | ~20 分钟（14:56 发作，~15:15 SSH 死） |
 | 恢复 | 物理断电 ×2 次（~2 小时） | 物理断电 | 物理断电 |
@@ -39,7 +39,7 @@
 
 全部满足才允许上板，缺一不可：
 
-1. **串口监测确认在线**（值守方侧常驻监听明确回复"监测在线"）；监测不在线不跑 L2
+1. **串口监测确认在线**（值守方常驻监听明确回复"监测在线"）；监测不在线不跑 L2
 2. **用户逐次特批**：每次 L2 实验前向用户说明改动内容/风险/回退方案，获明确同意
 3. **静态审查**：量化结构体字段访问与 ggml-common.h 逐字段核对；禁止非对齐
    `(const int*)`/`(const int4*)` 强转（用 get_int_b4 逐字节模式）；shared 内存/
@@ -50,7 +50,7 @@
 6. **时段选择**：只在用户可现场断电的时段跑 L2（事故恢复需要人到现场）
 
 ### 操作规程
-1. 跑任何 GPU 负载前在 协作邮局 值守方线程发预告（内容：binary、改动类型、预计时长）。
+1. 跑任何 GPU 负载前在协作邮局值守方线程发预告（内容：binary、改动类型、预计时长）。
 2. 新 binary/新模型：先 2K（~25s）验证输出+acceptance，再上 128K（~13min）。一次只改一个变量。
 3. 不再写任何访问量化块内部字段的新 kernel 代码（B4/B5 已收尾，verify 侧 kernel 优化关闭）。
 4. 实验产物分级管理：打挂过的 binary/object 立即改名 *.BADHANG 并记录配置。
@@ -63,8 +63,12 @@
 - `b3-correctness2-i64o2` / `b3-microbench7-i64o2` / `mmq-instance-nvfp4-i64o2.cu.o`（9/13，B 类 config hang，*.BADHANG）
 - MMQ 配置空间全部：nthreads 512、occupancy 2、I=64、K_vram 512/1024（后两者性能上也证伪：84.7 < 90.2 GB/s）
 
-## 五、给值守方（值守方）的监测特征（已在用）
+## 五、给值守方的监测特征（已在用）
 
 - ping 通 + SSH 22 refused = 内核死锁（区别于断电/overlay 回滚）
 - 早期信号：`error notifier set to` / `blocked for more than` / `rcu_preempt.*stall`
 - 我方义务：跑前预告；出现信号后不再做任何远端操作，直接等断电窗口
+
+---
+
+[整理者注] 本文档由工作笔记脱敏改写：作者行主机代号中性化（AI助手/x86主机）；值守 AI 助手名统一为"值守方"；内部协作邮局标识中性化。技术数据（事故时间线、内核签名、根因、拉黑清单）100% 保留。
