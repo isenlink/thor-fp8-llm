@@ -39,6 +39,7 @@ experiments, and the measured data — to save the next person the same groping.
 | 128K long-context decode | 16.4±0.7 tok/s (production baseline, MTP K7 + F8 attn + NVFP4 MLP) |
 | B3 kernel optimization (standalone) | NVFP4 MMVQ gemv 144→207 GB/s (+44%), root cause = repeated L2 reads of the y vector (see 04/) |
 | B3 final (perj fix + MTP K12 p0.5) | 2K decode **31.02 tok/s** (+20.6%), 128K decode **19.61 tok/s** (+16.2%), output byte-identical to baseline (see 04/ b3-final-results) |
+| Post-9/13 optimization review | B4/B5 verify-kernel work, vocab crop, and draft F8 were rejected by paired A/B tests; 19.61 tok/s remains the production best (see 04/ takeover, draft-levers, incidents) |
 | GPU hugepage pool | 20G → 42G (later expanded to 46G), persisted |
 | Full-load temperature | 72–74 °C (passive cooling, stable) |
 
@@ -50,7 +51,7 @@ docs/
   01-hardware-recon/      Board environment recon: memory truth, carveout, tmpfs, storage layout
   02-cross-compile/       x86 host cross-compiling aarch64 + sm_101a full toolchain (11 pitfalls)
   03-model-conversion/    FP8 → GGUF conversion, three-layer obstacles + model file ledger
-  04-nvfp4-optimization/  NVFP4 quantization + speculative-decoding tuning (incl. failed MTP K7, B3 kernel-level optimization decision chain, microbench breakdown, correctness-incident fix chain + final results)
+  04-nvfp4-optimization/  NVFP4 quantization + speculative-decoding tuning (incl. failed MTP K7, B3 kernel-level optimization decision chain, microbench breakdown, correctness-incident fix chain, final results, rejected follow-up paths, and GPU deadlock discipline)
   05-system-tuning/       Hugepage pool expansion & persistence, overlay, storage, temperature
   06-benchmarks/          Per-stage benchmarks + community comparison
 scripts/                  Board/host helper scripts (UART probe, GPU pool check, B3 kernel microbench suite)
@@ -58,21 +59,22 @@ scripts/                  Board/host helper scripts (UART probe, GPU pool check,
 
 ## The headline optimization (TL;DR)
 
-The single biggest win was **speculative-decoding tuning**, not model choice.
-On a bandwidth-constrained board, the golden recipe:
+The first major win was **speculative-decoding tuning**, followed by the B3
+NVFP4 MMVQ kernel fix. On this bandwidth-constrained board, the stable
+production recipe became:
 
 ```
-deep drafting (n-max 8-12)
-+ high-confidence gating (--spec-draft-p-min 0.6)
+NVFP4 MMVQ y-reuse fix (perj)
++ deep drafting (--spec-draft-n-max 12)
++ high-confidence gating (--spec-draft-p-min 0.5)
 + flash attention (-fa on)
 + single stream (--parallel 1)
 ```
 
-This took decode from **11.42 → 26.48 tok/s** (2.3×) with the *same model*.
-The counterintuitive part: **deep drafting *without* the p-min gate is a
-negative** (K7 dropped to 7.24 tok/s, 18% acceptance) — the gate is a
-precondition, not an optional tweak. Full experiment matrix in
-[docs/04-nvfp4-optimization/nvfp4-optimization-log.md](docs/04-nvfp4-optimization/nvfp4-optimization-log.md).
+This took the 128K production target from **16.88 → 19.61 tok/s**, while the
+2K short-context benchmark reached **31.02 tok/s**. Later attempts to reach
+30 tok/s at 128K are documented as rejected paths in
+[docs/04-nvfp4-optimization/takeover-2026-09-13.md](docs/04-nvfp4-optimization/takeover-2026-09-13.md).
 
 ## What makes DRIVE Thor different (and hard)
 

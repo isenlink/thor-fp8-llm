@@ -38,6 +38,7 @@ DRIVE Thor 的民间本地 LLM 部署资料几乎为零：官方只提供 DriveO
 | 128K 长上下文 decode | 16.4±0.7 tok/s（生产基线，MTP K7 + F8 attn + NVFP4 MLP） |
 | B3 kernel 优化（standalone） | NVFP4 MMVQ gemv 144→207 GB/s（+44%），根因 = y 向量重复 L2 读取（见 04 目录） |
 | B3 定案（perj 修复 + MTP K12 p0.5） | 2K decode **31.02 tok/s**（+20.6%）、128K decode **19.61 tok/s**（+16.2%），输出与基线逐字一致（见 04 目录 b3-final-results） |
+| 9-13 后续优化复盘 | B4/B5 verify kernel 路线、vocab crop、draft F8 均经配对 A/B 否决；19.61 tok/s 维持生产最优（见 04 目录 takeover / draft-levers / incidents） |
 | GPU 大页池 | 20G → 42G（后续扩至 46G）并固化 |
 | 满载温度 | 72–74°C（被动散热，稳定） |
 
@@ -49,7 +50,7 @@ docs/
   01-hardware-recon/      板端环境摸底：显存真相、carveout、tmpfs、存储布局
   02-cross-compile/       x86 主机交叉编译 aarch64 + sm_101a 全套工具链
   03-model-conversion/    FP8 → GGUF 转换三层障碍（架构名分发/分片命名/numpy ABI）+ 模型文件台账
-  04-nvfp4-optimization/  NVFP4 量化路线实验记录（含失败实验 MTP K7、B3 kernel 级优化决策链、microbench 拆解、正确性事故修复链与定案成绩）
+  04-nvfp4-optimization/  NVFP4 量化路线实验记录（含失败实验 MTP K7、B3 kernel 级优化决策链、microbench 拆解、正确性事故修复链、定案成绩、后续否决路线与 GPU 死锁事故纪律）
   05-system-tuning/       GPU 大页池扩容与固化、overlay 持久化方法论、温度管理
   06-benchmarks/          各阶段基准数据与复现命令（含 200K 基准台账）
 scripts/                  板端/主机实用脚本（串口探测、GPU 池检查、B3 kernel microbench 全家桶）
