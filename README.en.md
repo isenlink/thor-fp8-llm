@@ -51,7 +51,7 @@ docs/
   01-hardware-recon/      Board environment recon: memory truth, carveout, tmpfs, storage layout
   02-cross-compile/       x86 host cross-compiling aarch64 + sm_101a full toolchain (11 pitfalls)
   03-model-conversion/    FP8 → GGUF conversion, three-layer obstacles + model file ledger
-  04-nvfp4-optimization/  NVFP4 quantization + speculative-decoding tuning (incl. failed MTP K7, B3 kernel-level optimization decision chain, microbench breakdown, correctness-incident fix chain, final results, rejected follow-up paths, and GPU deadlock discipline)
+  04-nvfp4-optimization/  NVFP4 quantization + speculative-decoding tuning (incl. failed MTP K7, B3 kernel-level optimization decision chain, microbench breakdown, correctness-incident fix chain, final results, rejected follow-up paths, GPU deadlock discipline, multi-board parallel testing readiness)
   05-system-tuning/       Hugepage pool expansion & persistence, overlay, storage, temperature
   06-benchmarks/          Per-stage benchmarks + community comparison
 scripts/                  Board/host helper scripts (UART probe, GPU pool check, B3 kernel microbench suite)
