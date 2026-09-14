@@ -117,11 +117,11 @@ llama-bench -m <model> -p 128 -n 64 -ngl 99
 
 ### 阶段 5：对外 API 标准化
 
-最终启动命令（v2 服务脚本 `/ai_workspace/tools/thor_service.sh`）：
+最终启动命令（v2 服务脚本 `/brand_data/ai_workspace/tools/thor_service.sh`）：
 
 ```bash
-/ai_workspace/tools/llama-server \
-  -m /ai_workspace/models/QUASAR-NVFP4-text.gguf \
+/brand_data/ai_workspace/tools/llama-server \
+  -m /brand_data/ai_workspace/models/QUASAR-NVFP4-text.gguf \
   --alias quasar-nvfp4-27b \
   -ngl 99 -c 65536 \
   -fa on \
@@ -131,7 +131,7 @@ llama-bench -m <model> -p 128 -n 64 -ngl 99
   --host 0.0.0.0 --port 8080
 ```
 
-- **API**：`http://<LAN-IP>:8080/v1`，OpenAI 兼容，无 KEY（任意/不填均可）
+- **API**：`http://192.168.1.101:8080/v1`，OpenAI 兼容，无 KEY（任意/不填均可）
 - **模型 ID**：`quasar-nvfp4-27b`（--alias 简化）
 - **上下文**：64K（FP16 KV 装不下 64K——42G 池 - 19.65G 权重 = 22G 可用，64K×0.5MB=32G 超限；q8_0 KV 16G ✓）
 - 管理命令：`./thor_service.sh {start|stop|status|bench}`
@@ -203,7 +203,7 @@ Wants=network-online.target
 
 [Service]
 Type=oneshot
-ExecStart=/home/user/bin/mount.nfs <LAN-IP>:/mnt/sdb2/models /media/models -o vers=4
+ExecStart=/home/user/bin/mount.nfs <x86主机IP>:/mnt/sdb2/models /media/models -o vers=4
 Restart=on-failure
 RestartSec=15
 
@@ -222,7 +222,7 @@ WantedBy=multi-user.target
 
 | 项 | 状态 |
 |---|---|
-| 对外 API | `http://<LAN-IP>:8080/v1`，无 KEY，OpenAI 兼容 |
+| 对外 API | `http://192.168.1.101:8080/v1`，无 KEY，OpenAI 兼容 |
 | 模型 ID | `quasar-nvfp4-27b` |
 | decode 性能 | **26.48 tok/s**（高可预测任务，超 25.89 目标）|
 | 创作任务 | 11.02 tok/s（= 基线不掉速，MTP 头预测力上限）|
@@ -265,10 +265,10 @@ WantedBy=multi-user.target
 
 [整理者注] 以下内容已按脱敏规则移除/替换（供复核）：
 
-- **内网 IP**（2 处）：对外 API 地址与 NFS 服务器地址各 1 处 → 统一替换为 `<LAN-IP>`
+- **内网 IP**：对外 API 地址（板端 192.168.1.101，保留）；NFS 服务器地址改写为 `<x86主机IP>` 占位（非本机，未记录）
 - **机器代号**：2 个内部机器代号（转换用主机 ×1、后续交接 Xeon 主机 ×1）→ 分别替换为"转换主机"/"交接主机"；相关 systemd unit 名与挂载点同步更名去除代号
 - **账号名/路径**：含真实账号名的 home 路径 1 处 → `/home/user/`；参与人登录名（2 个）→ 统一为 `user`
 - **人名**：1 位真实人名 + 所属部门 → "作者"；AI 助手产品名 → "AI助手"
 - **疑似内部项目代号**：后续路线中 1 处内部项目代号 → 以模型系列名" DFlash2"指代
 - **本文件中未发现**以下类型敏感内容，故无需对应处理：板卡 SN 号、密码/token/凭据（未加 "[已移除凭据]" 标记）、渠道商/解锁/刷机/锁机相关段落
-- **路径代称说明**：`/` 为板载数据分区挂载点在本笔记中的**代称**。DriveOS 板上该分区（约 105G，板载 vblkdev，与只读根分区独立）的原路径名含车辆品牌字样，为保持品牌中立统一写作 `/`。读者在自己板卡上执行 `ls /` 即可看到真实分区名；文中所有 `/ai_workspace/...` 对应"数据分区下的 AI 工作区"。GitHub/镜像站等公开 URL 原样保留。
+- **路径代称说明**：`/brand_data/` 为板载数据分区挂载点在本笔记中的**代称**。DriveOS 板上该分区（约 105G，板载 vblkdev，与只读根分区独立）的原路径名含车辆品牌字样，为保持品牌中立统一写作 `/brand_data/`。读者在自己板卡上执行 `ls /` 即可看到真实分区名；文中所有 `/brand_data/ai_workspace/...` 对应"数据分区下的 AI 工作区"。GitHub/镜像站等公开 URL 原样保留。

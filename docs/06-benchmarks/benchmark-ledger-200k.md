@@ -24,7 +24,7 @@
 1. **NVFP4 原生 kernel 在 sm_101a 数值错误**（"1+1="→乱码实锤；A4-1/A4-2 双重验证）。上游只在 sm_120（RTX 50 系）验证过；Thor T264/14SM 无人验证。修复=等上游或自己改 kernel（远期）
 2. **llama.cpp master（5d806aa）qwen35 内置 MTP 全链路在 Thor 跑通**（A4-3/A4-4：正确性✅、接受率✅），但 decode 5.94 vs 老栈 12.32——**验证 batch（8 tok/步 forward）开销 > 投机收益**，老 build 外挂 MTP（轻验证链）依旧最优
 3. **Q4_K_M 在新 build 20K 口径 prefill 235.9 t/s**（老 build 同口径 135-158），但 200K 长上下文优势消失（140.7）——新 kernel 的长上下文 attention 路径无优化
-4. **williamliao Quality-v2（16.06GB）SHA256=6007d4b0...25cb 已存板**：/ai_workspace/models/（NVFP4 kernel 修复后可复用）
+4. **williamliao Quality-v2（16.06GB）SHA256=6007d4b0...25cb 已存板**：/brand_data/ai_workspace/models/（NVFP4 kernel 修复后可复用）
 5. **Radix 34.91 三壁垒定案**：私有 FP8 kernel（100% 带宽效率）+ NVFP4 小权重 + 深度 MTP 验证链优化——全部在其私有 runtime，llama.cpp 参数层面不可追
 
 **2×2 矩阵结论（09-09，真 200K 口径）**：

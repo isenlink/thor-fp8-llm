@@ -3,8 +3,8 @@
 # 目的：CUDA graph 回放对 op_prof 是盲区 → 关 graph 让全部 forward 走 eager，
 #       拿 perj + K12/p0.5 的 MTP step 真实墙钟构成（draft 链/verify/attn/MLP）
 set -u
-B=/ai_workspace/bench
-T=/ai_workspace/ai-assistant
+B=/brand_data/ai_workspace/bench
+T=/brand_data/ai_workspace/ai-assistant
 SERVER=$T/llama-server-ai-assistant-perj
 
 stop_server() {
@@ -24,7 +24,7 @@ export GGML_MMVQ_MAX=2
 export GGML_OP_PROF=1
 export GGML_CUDA_DISABLE_GRAPHS=1
 setsid "$SERVER" \
-  -m /ai_workspace/models/RadixArk-F8attn-v2.gguf \
+  -m /brand_data/ai_workspace/models/RadixArk-F8attn-v2.gguf \
   -ngl 99 -c 131072 -fa on \
   --cache-type-k f16 --cache-type-v f16 \
   --spec-type draft-mtp --spec-draft-n-max 12 --spec-draft-p-min 0.5 \

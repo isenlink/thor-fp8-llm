@@ -60,12 +60,16 @@ kernel 变快改变了 verify/draft 成本结构 → 旧栈"K7 最优"结论失�
 ### 3.1 kernel 构建（x86主机，免 qemu 快通道）
 ```bash
 # mmvq.cu 单文件交叉编译（约 1-2 分钟；全量 cmake 约 37 分钟仅首次需要）
-cd ~/work/thor-driveos && make -f ~/work/thor-ai-assistant/native-mmvq.mk
-# 产物 ~/work/thor-ai-assistant/mmvq.cu.o → 链接：
-bash ~/work/thor-ai-assistant/link-server.sh   # 出 llama-server（手改 -o 目标名）
-bash ~/work/thor-ai-assistant/link-check.sh    # 出 b3-correctness（batched vs 单列）
-bash ~/work/thor-ai-assistant/link-check2.sh   # 出 b3-correctness2（CPU 反量化参考）
+cd ~/work/thor-driveos && make -f <repo>/scripts/native-mmvq.mk
+# 产物 mmvq.cu.o → 链接：
+bash <repo>/scripts/link-server.sh   # 出 llama-server（手改 -o 目标名）
+bash <repo>/scripts/link-check.sh    # 出 b3-correctness（batched vs 单列）
+bash <repo>/scripts/link-check2.sh   # 出 b3-correctness2（CPU 反量化参考）
 ```
+
+### 3.1.1 kernel 补丁（本仓库内）
+- `patches/mmvq-nvfp4-y-reuse-b3.diff` —— mmvq.cu + vecdotq.cuh 的完整改动（y 预读复用 / rows_per_block=8 / preload 列内修正），`git apply` 到 llama.cpp 对应版本即可
+- `scripts/native-mmvq.mk`、`scripts/link-*.sh` —— 单文件交叉编译与链接脚本（路径按己方环境改）
 
 ### 3.2 正确性门禁（ kernel 改动必过，不过不进全模型）
 ```bash
@@ -78,17 +82,17 @@ bash ~/work/thor-ai-assistant/link-check2.sh   # 出 b3-correctness2（CPU 反�
 
 ### 3.3 生产启动（板上，脚本文件承载，防 pkill 连坐 ssh）
 ```bash
-# /ai_workspace/ai-assistant/restart-pmin.sh <K> <pmin> <logtag>
+# /brand_data/ai_workspace/ai-assistant/restart-pmin.sh <K> <pmin> <logtag>
 bash restart-pmin.sh 12 0.5 prod
 # 等价手动命令：
 GGML_CUDA_GRAPH_OPT=1 GGML_MMVQ_MAX=2 setsid ./llama-server-ai-assistant-perj \
-  -m /ai_workspace/models/RadixArk-F8attn-v2.gguf -ngl 99 -c 131072 -fa on \
+  -m /brand_data/ai_workspace/models/RadixArk-F8attn-v2.gguf -ngl 99 -c 131072 -fa on \
   --cache-type-k f16 --cache-type-v f16 --parallel 1 --port 8080 \
   --spec-type draft-mtp --spec-draft-n-max 12 --spec-draft-p-min 0.5 \
   > prod.log 2>&1 < /dev/null &
 ```
 
-### 3.4 确定性配对 bench（~/work/thor-ai-assistant/bench.py，板上同名）
+### 3.4 确定性配对 bench（`scripts/bench.py`，板上同名）
 ```bash
 python3 bench.py 2000 trial1     # 2K 口径，约 25 秒
 python3 bench.py 124000 trial1   # 128K 口径，约 12-13 分钟
@@ -103,6 +107,8 @@ python3 bench.py 124000 trial1   # 128K 口径，约 12-13 分钟
 - pkill -f 的模式串会匹配 ssh 会话自身命令行 → 连坐自杀；杀进程逻辑必须放板上脚本文件
 - 板上启动 server 必须 setsid + 重定向三件套，否则 ssh 断开带走子进程
 - 温度红线 95°C；kernel 崩溃可能拖死 nvgpu 通道（只能重启板），microbench 先查代码
+
+> 模型文件 19.57 GiB 不入库，SHA256 与获取/转换步骤见 [../03-model-conversion/README.md](../03-model-conversion/README.md)。
 
 ## 4. 失败/关闭路线台账（勿重复投入）
 
@@ -120,7 +126,7 @@ python3 bench.py 124000 trial1   # 128K 口径，约 12-13 分钟
 
 ## 5. 当前生产配置
 
-- binary：板上 `/ai_workspace/ai-assistant/llama-server-ai-assistant-perj`（SHA256 3dafb508…，源 = xbuild/llama-cpp-latest 当前工作区 mmvq.cu 的 perj 修复）
+- binary：板上 `/brand_data/ai_workspace/ai-assistant/llama-server-ai-assistant-perj`（SHA256 3dafb508…，源 = xbuild/llama-cpp-latest 当前工作区 mmvq.cu 的 perj 修复）
 - 模型：RadixArk-F8attn-v2.gguf（SHA256 d15dac91…，板上与 x86主机 一致）
 - 配置：GGML_CUDA_GRAPH_OPT=1、GGML_MMVQ_MAX=2、f16 KV、-fa on、-c 131072、MTP K12 p-min 0.5
 - 证据：~/work/thor-ai-assistant/evidence/（全部配对 jsonl + server log）

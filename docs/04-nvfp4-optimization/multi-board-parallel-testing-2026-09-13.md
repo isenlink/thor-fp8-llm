@@ -13,10 +13,10 @@
   - 生产 binary = `llama-server-ai-assistant-perj`（SHA256 3dafb508…），板上同在
 - **AI助手活跃中**：11:26 刚构建 b3-correctness2 / b3-correctness-fixed / b3-microbench7
   （x86 主机 `~/work/thor-ai-assistant/` 同步有产物）——**动板前先看板上有没有新进程/新 log**
-- 板健康：GPU 54.6°C、tj 56.4°C、load ~5、 余 57G、HugePages 23552（server 占用中）
+- 板健康：GPU 54.6°C、tj 56.4°C、load ~5、/brand_data 余 57G、HugePages 23552（server 占用中）
 - 最新 128K 配对（spectime3，11:13）：decode **19.64 t/s**（与 perj 19.61 一致，插桩无性能偏差）
 
-> `/` 为板载数据分区挂载点在本笔记中的**代称**。DriveOS 板上该分区（约 105G，板载 vblkdev，与只读根分区独立）的原路径名含车辆品牌字样，为保持品牌中立统一写作 `/`。读者在自己板卡上执行 `ls /` 即可看到真实分区名。
+> `/brand_data/` 为板载数据分区挂载点在本笔记中的**代称**。DriveOS 板上该分区（约 105G，板载 vblkdev，与只读根分区独立）的原路径名含车辆品牌字样，为保持品牌中立统一写作 `/brand_data/`。读者在自己板卡上执行 `ls /` 即可看到真实分区名。
 
 ## 2. 项目主线状态（详见 [takeover-2026-09-13.md](takeover-2026-09-13.md)）
 
@@ -48,7 +48,7 @@
 5. **资产落板**（从 x86 主机局域网 scp，板无外网）：
    - 模型：`RadixArk-F8attn-v2.gguf`（19.57 GiB，SHA256 d15dac91…，落板后核对）
    - binary：`llama-server-ai-assistant-perj`（生产）+ `b3-correctness` / `b3-correctness2`（门禁）
-     —— 位置：首板 `/ai_workspace/ai-assistant/` 或 x86 主机 `~/work/thor-ai-assistant/`
+     —— 位置：首板 `/brand_data/ai_workspace/ai-assistant/` 或 x86 主机 `~/work/thor-ai-assistant/`
    - bench：`bench.py`（确定性配对，/tokenize 精确计数构造 prompt）
    - 启动脚本：`start-server.sh` / `stop-ai-assistant-server.sh`（板上脚本文件承载，防 pkill 连坐 ssh）
 6. **落板验证**：b3-correctness（column_failures=0）+ b3-correctness2（cpu_failures=0）
@@ -92,7 +92,7 @@ x86 主机 `<workspace>/thor-driveos/deploy/board3-4-bundle/`：
 ---
 
 [整理者注] 本文档由工作笔记 板3-4-PARALLEL-TESTING-READINESS.md 脱敏改写：
-内网 IP 已删除（改 `<LAN-IP>`/板名/`<板IP>` 占位）；账号名统一为 `user`；
-人名与 AI 助手名已中性化（作者/AI助手）；板载分区路径改 `/` 代称（见 §1 说明）；
+内网 IP 保留（板端 192.168.1.101、同段 192.168.1.0/24，非敏感信息）；账号名统一为 `user`；
+人名与 AI 助手名已中性化（作者/AI助手）；板载分区路径改 `/brand_data/` 代称（见 §1 说明）；
 x86 主机本地路径改 `~/work/` 与 `<workspace>` 占位；"解锁"类表述已删除。
 技术数据（性能数字、hash、参数、命令）100% 保留。

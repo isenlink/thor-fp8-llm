@@ -2,8 +2,8 @@
 # R30: 128K decode 滚动窗口拆账（op_prof v3：每 20000 ops dump+清零）
 # 目的：perj + K12/p0.5 后重新拆 128K decode 尾段账本，刷新过期的 R30/R32 结论
 set -u
-B=/ai_workspace/bench
-T=/ai_workspace/ai-assistant
+B=/brand_data/ai_workspace/bench
+T=/brand_data/ai_workspace/ai-assistant
 SERVER=$T/llama-server-ai-assistant-perj
 
 stop_server() {
@@ -22,7 +22,7 @@ export GGML_CUDA_GRAPH_OPT=1
 export GGML_MMVQ_MAX=2
 export GGML_OP_PROF=1
 setsid "$SERVER" \
-  -m /ai_workspace/models/RadixArk-F8attn-v2.gguf \
+  -m /brand_data/ai_workspace/models/RadixArk-F8attn-v2.gguf \
   -ngl 99 -c 131072 -fa on \
   --cache-type-k f16 --cache-type-v f16 \
   --spec-type draft-mtp --spec-draft-n-max 12 --spec-draft-p-min 0.5 \

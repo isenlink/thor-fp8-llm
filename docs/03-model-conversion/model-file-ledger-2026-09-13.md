@@ -7,7 +7,7 @@
 
 | 文件 | 位置 | 大小 | SHA256 | 说明 |
 |---|---|---|---|---|
-| RadixArk-F8attn-v2.gguf | 板 `/ai_workspace/models/` | 19.57 GiB | `d15dac916823f590fa8e584ae18a37c62d61947ce33df943a658c83766d2e7e9` | ✅ **生产模型**。NVFP4 MLP（193 张量）+ F8_E4M3 注意力/GDN 投影（208 张量），arch=qwen35，内置 MTP 头 |
+| RadixArk-F8attn-v2.gguf | 板 `/brand_data/ai_workspace/models/` | 19.57 GiB | `d15dac916823f590fa8e584ae18a37c62d61947ce33df943a658c83766d2e7e9` | ✅ **生产模型**。NVFP4 MLP（193 张量）+ F8_E4M3 注意力/GDN 投影（208 张量），arch=qwen35，内置 MTP 头 |
 | 同上（主备份） | x86主机 `~/work/thor-driveos/models/` | 同上 | 同上（已核对一致） | 📦 板上文件的同源备份 |
 
 - 格式来源：radixark/ HF 源（ModelOpt FP8+NVFP4 混合）经自写转换器 C3 产出
@@ -18,7 +18,7 @@
 
 | 文件 | 位置 | 大小 | SHA256 | 状态 |
 |---|---|---|---|---|
-| QUASAR-NVFP4-text.gguf | 板 `/ai_workspace/models/` | 18.30 GiB | `5358cf07df4779e1bf14c518d488b4ee3dca1ae00f98106428db248e83623408` | 📦 老栈对照模型（R1-R8 基准用）。已被 RadixArk 路线取代，保留作回归对照 |
+| QUASAR-NVFP4-text.gguf | 板 `/brand_data/ai_workspace/models/` | 18.30 GiB | `5358cf07df4779e1bf14c518d488b4ee3dca1ae00f98106428db248e83623408` | 📦 老栈对照模型（R1-R8 基准用）。已被 RadixArk 路线取代，保留作回归对照 |
 
 ## 3. x86主机 历史产物（~/work/thor-driveos/models/）
 
@@ -61,4 +61,4 @@
 
 1. 删 x86主机 `models/Qwen3.8-27B-Q4_K_M.gguf`（0 字节）与同名空目录
 2. RadixArk-F8all-v3.gguf（26.5G）移至 models-offboard/ 或直接删——A2 结论已落盘，文件本身无复用价值
-3. 板上只保留两个模型（生产 + QUASAR 对照）现状合理， 余量 57G 健康
+3. 板上只保留两个模型（生产 + QUASAR 对照）现状合理，/brand_data 余量 57G 健康

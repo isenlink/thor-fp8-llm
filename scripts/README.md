@@ -13,6 +13,13 @@
 | `b3-microbench2~6.cu` | kernel 级流水线拆解 microbench（访存/LUT/dp4a/y 复用/LUT vs 算术解码） | 板端（交叉编译） | CUDA |
 | `r30-rollprof-128k.sh` | 128K decode 滚动窗口 op_prof 拆账（perj + K12/p0.5 账本） | 板端 | llama-server |
 | `r32-eager-prof-128k.sh` | 128K 全 eager（关 CUDA graph）MTP step 墙钟构成 | 板端 | llama-server |
+| `bench.py` | 确定性配对 bench：/tokenize 精确计数构造 prompt，temperature=0 + seed=123 + n_predict=384 | 板端（对 8080 服务） | 无（标准库） |
+| `native-mmvq.mk` | mmvq.cu 单文件交叉编译（免全量 cmake） | x86 主机 | CUDA 12.8 + aarch64 工具链 |
+| `link-server.sh` | 链接 llama-server（新 kernel 目标文件替换） | x86 主机 | 同上 |
+| `link-check.sh` / `link-check2.sh` | 链接正确性门禁（batched vs 单列 / CPU 反量化参考） | x86 主机 | 同上 |
+| `link-mb7.sh` | 链接 kernel 级 microbench7 | x86 主机 | 同上 |
+| `gguf-blk64-to-f8.py` | MTP draft 层（blk.64）权重 BF16→F8_E4M3 重编码 | x86 主机 | gguf-py、ml_dtypes、numpy |
+
 
 ## uart_probe.py
 

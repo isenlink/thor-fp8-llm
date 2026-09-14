@@ -35,3 +35,21 @@ llama.cpp `conversion/base.py` 硬编码 `prefix = "model"` 找分片，而我�
 
 - pip 装完必须用最小用例验证（`torch.from_numpy(np.arange(10))`），不能只看 import 成功
 - 报错文案 "expected X (got X)" 字面矛盾时 = 类型对象来自不同 ABI 编译，查编译侧与运行时库版本配套
+
+## 复现材料（2026-09-14 补）
+
+### 模型文件（体积原因不入库）
+| 文件 | 大小 | SHA256 | 获取方式 |
+|---|---|---|---|
+| `RadixArk-F8attn-v2.gguf` | 19.57 GiB | `d15dac916823f590fa8e584ae18a37c62d61947ce33df943a658c83766d2e7e9` | 由 HF 源经下述步骤转换产出；需单独分发（HuggingFace / 网盘），下载后**必须核对 SHA256** |
+
+> 19.57 GiB 超过仓库承载，故只入库转换器与步骤；拿到文件后用 `sha256sum` 核对上表 hash 即可确认与生产一致。
+
+### 转换步骤
+1. 取 HF 源（ModelOpt FP8+NVFP4 混合量化权重，含 `model_mtp.safetensors`）。
+2. 用打上 F8 支持补丁的 `convert_hf_to_gguf.py` 转 GGUF（三层障碍见上：architectures 改名、分片命名适配、numpy/torch ABI 配套）。
+3. 运行 `scripts/gguf-blk64-to-f8.py` 把 `blk.64`（MTP draft 层）8 个二维权重重编码为 F8_E4M3 + per-tensor scale；其余张量与元数据原样拷贝。
+   ```bash
+   python3 scripts/gguf-blk64-to-f8.py <输入.gguf> <输出.gguf>
+   ```
+4. 校验：张量审计应为 FP8×208 / NVFP4×193 / scale×995 / 未变×798。
