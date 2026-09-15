@@ -59,30 +59,53 @@ mkdir: cannot create directory '/mnt/xxx': Read-only file system
 **根因**：DriveOS 根文件系统只读挂载（安全设计），`/mnt`、`/sbin`、`/usr/local` 全在只读根下。
 `sudo` 也改不了——这是挂载属性，不是权限问题。
 
-**解法**：持久挂载点/文件一律放 **可写 overlay**：`/media`、`/home`、`/var`、`/etc`。
+**更深一层（实测）**：根设备挂在 hypervisor 虚拟存储后端（`tegra_virt_storageNN`）上，
+写保护在 **hypervisor 层**。所以连 `sudo mount -o remount,rw /`、
+`blockdev --setrw`、`dd` 写裸设备、`debugfs -w` **全部失败**
+（`write-protected` 或 `Operation not permitted`）。**这条路彻底堵死，别浪费时间试。**
+
+**解法**：需要写的文件放**可写区 + 全路径引用**。
 
 ```bash
-sudo mkdir -p /media/xxx     # ✅ 正确位置
+sudo mkdir -p /media/xxx     # ✅ 可写 overlay 区
 ```
 
 ⚠️ **本坑我们踩了两次**（`/mnt/ssd_repo`、`/mnt/ai-station_models`，后来又犯一次 `/sbin/mount.nfs`）。
 **正确思路永远是"放可写区 + 全路径引用"**，不要试图 remount,rw——恒只读，不该碰。
 
+⚠️ **但要注意**：`/etc`、`/home`、`/media`、`/var` 是 **overlay 可写层**，**脏断电后会被固件格式化**
+（见 [A2](#a2-硬断电后-etc-改动消失)）。放这里只保证"本次开机期间可写"，
+**不保证跨断电存活**。要扛断电请用独立非易失分区（如 `/brand_data/`）。
+
 📄 详见 [docs/05-system-tuning/storage-mounting.md](docs/05-system-tuning/storage-mounting.md)
 
 ### A2. 硬断电后 /etc 改动消失
 
-**症状**：修改了 `/etc` 下的配置（账号、fstab、sysctl），硬断电重启后回滚到旧状态。
+**症状**：修改了 `/etc` 下的配置（账号、静态 IP、sysctl），断电重启后回滚到出厂状态。
 
-**根因**：overlay 可写层未 sync 就断电，改动丢失。
+**根因（实测，不是 sync 问题）**：`/etc` 是 overlay，可写上层是一个独立分区。
+**脏断电后该分区 fsck 判错，固件直接把它格式化重建**——整个可写层归零。
+dmesg 铁证：
 
-**解法**：
-```bash
-sudo sync          # 改完必 sync
-sudo reboot        # 重启一律用 reboot，不要硬断电
+```
+[overlay] partition errors,ready to format     ← 本次 boot 被格式化（配置已丢）
+[overlay] partition no errors                  ← 干净复位（配置保留）
 ```
 
-📄 详见 [docs/01-hardware-recon/hardware-archive.md](docs/01-hardware-recon/hardware-archive.md) §5
+**关键推论**：`sync` 救不了（不是缓存问题）；**板上任何钩子也救不了**——
+systemd unit / cron / rc.local 全都活在 overlay 上，格式化时一起被抹掉。
+
+**解法**（要扛脏断电，必须两步都做）：
+1. 把配置**打包放独立非易失分区**（`/brand_data/`，该分区在多次脏断电中实测存活），
+   写一个 restore 脚本从包里还原；
+2. 触发器放**板外常电主机**（串口探测 boot → 判定 overlay 被吞 → 远程跑 restore）。
+   板内插钩子这条路已实测堵死：根分区只读保护在 **hypervisor 层**
+   （`dd` / `debugfs -w` / `remount rw` 全部 `Operation not permitted`）。
+
+按此架构实测：断电后 **约 3 分钟无人值守自动恢复**，账号/IP/大页池全部复原。
+
+📄 全套实证（10 条死路 + 启动链解剖 + 架构设计 + 踩坑）见
+[docs/05-system-tuning/overlay-power-loss-recovery.md](docs/05-system-tuning/overlay-power-loss-recovery.md)
 
 ### A3. GPU 可用显存远小于物理内存
 

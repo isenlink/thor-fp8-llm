@@ -51,7 +51,7 @@ docs/
   02-cross-compile/       x86 主机交叉编译 aarch64 + sm_101a 全套工具链
   03-model-conversion/    FP8 → GGUF 转换三层障碍（架构名分发/分片命名/numpy ABI）+ 模型文件台账
   04-nvfp4-optimization/  NVFP4 量化路线实验记录（含失败实验 MTP K7、B3 kernel 级优化决策链、microbench 拆解、正确性事故修复链、定案成绩、后续否决路线与 GPU 死锁事故纪律、多板并行测试准备）
-  05-system-tuning/       GPU 大页池扩容与固化、overlay 持久化方法论、温度管理
+  05-system-tuning/       GPU 大页池扩容与固化、overlay 持久化方法论、断电自愈架构、温度管理
   06-benchmarks/          各阶段基准数据与复现命令（含 200K 基准台账）
 scripts/                  板端/主机实用脚本（串口探测、GPU 池检查、B3 kernel microbench 全家桶）
 ```
