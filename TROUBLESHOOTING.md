@@ -70,7 +70,7 @@ mkdir: cannot create directory '/mnt/xxx': Read-only file system
 sudo mkdir -p /media/xxx     # ✅ 可写 overlay 区
 ```
 
-⚠️ **本坑我们踩了两次**（`/mnt/ssd_repo`、`/mnt/ai-station_models`，后来又犯一次 `/sbin/mount.nfs`）。
+⚠️ **本坑我们踩了两次**（`/mnt/ssd_repo`、`/mnt/models_repo`，后来又犯一次 `/sbin/mount.nfs`）。
 **正确思路永远是"放可写区 + 全路径引用"**，不要试图 remount,rw——恒只读，不该碰。
 
 ⚠️ **但要注意**：`/etc`、`/home`、`/media`、`/var` 是 **overlay 可写层**，**脏断电后会被固件格式化**
