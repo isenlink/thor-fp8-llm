@@ -1,6 +1,6 @@
 # KV cache budget and 256K feasibility on DRIVE Thor (measured ladder)
 
-**English summary**: Because only 16 of the model's 65 layers are full-attention (the rest are linear-attention / GDN), KV costs just 64 KB per token in f16 — so a full 256K context needs only ~17 GB and fits the 58 GiB unified memory. We ran the full ladder (30K → 254K input, 1024-token outputs): decode degrades gently (−28%), the real cost is prefill time (67 s → 25.6 min), and prefix caching makes follow-up questions on the same long document nearly free (TTFT 25.6 min → 5.9 s).
+**English summary**: Because only 16 of the model's 65 layers are full-attention (the rest are linear-attention / GDN), KV costs just 64 KB per token in f16 — so a full 256K context needs only ~17 GB and fits the 58 GiB unified memory. We ran the full ladder (30K → 254K input, 1024-token outputs): decode degrades gently (−28%), the real cost is prefill time (67 s → 25.6 min), and prefix caching makes follow-up questions on the same long document nearly free (TTFT 25.6 min → 5.9 s). A KV-type ablation at 256K shows q8_0 saves 6.5 GB but costs 34-36% of decode throughput (acceptance unchanged), so f16 stays the default.
 
 # KV 预算与 256K 长上下文实测（2026-09-16）
 
@@ -78,13 +78,39 @@
 | 长报告 / 代码库 | 100-128K | 131072 | 8 min | 15 t/s |
 | 超长文档（全书级） | 250K+ | **262144** | 26 min（**仅首次**） | 12.9-17.8 t/s |
 
-**KV 类型保持 f16**：本平台长档实测 f16 优于 q8_0（q8_0 省一半内存但反量化开销 + 草稿质量双重惩罚）。
-若确实要腾内存给别的用途，再考虑 q8_0，并**必须重新实测 acceptance**。
+**KV 类型保持 f16**：256K 实测（§6）q8_0 省 6.5 GB 但解码 **−34~36%**，acceptance 不变
+⇒ 代价是纯反量化开销，**不是**草稿质量问题。若确实要腾内存给别的用途才用 q8_0，并接受该代价。
 
 **稳定性观测（256K 全程 84 个采样点）**：`MemAvailable` 稳定在 5.8-7.0 GB（大页池刚性占走其余），
 **温度峰值 66.2°C**（设计上限约 102°C），无 OOM、无 CUDA 错误。
 
-## 6. 复现要点
+## 6. KV 类型消融：`q8_0` vs `f16` @256K（同输入、同输出长度、同草稿配置）
+
+| 指标（输入 252,532 token / 输出 1024） | **f16** | **q8_0** | 差异 |
+|---|---:|---:|---|
+| 预填充 | 164.38 t/s (1536 s) | 162.67 t/s (1552 s) | **−1%（持平）** |
+| **解码（首次，冷）** | **14.03 t/s** | **8.94 t/s** | **−36%** |
+| acceptance（首次） | 0.330 | 0.316 | −1.4 pp |
+| mean accepted len（首次） | 2.64 | 2.58 | −2% |
+| **解码（同一长文换问题，前缀缓存命中）** | **17.78 t/s** | **11.67 t/s** | **−34%** |
+| acceptance（二次） | 0.469 | 0.473 | ±0 |
+| **大页池占用峰值** | **34.7 GB** | **28.2 GB** | **省 6.5 GB** |
+| 温度峰值 | 66.2 °C | 66.6 °C | 相同 |
+
+**三条读法**：
+
+1. **省 6.5 GB 内存，代价是解码慢三分之一**（−34~36%）；**预填充不受影响**（±1%）——
+   解码每 step 都要把整个 KV 重读一遍：q8_0 省下的是带宽，付出的却是每次读取的反量化开销，
+   在长上下文下**后者大于前者**；
+2. **损失不在草稿质量**：两臂 acceptance 几乎相同（0.330/0.316、0.469/0.473）、mean accepted len 也近似
+   ⇒ 全部差异来自 KV 反量化路径（与本仓库"注意力量化阶梯"里"Q4_K 接受率最高、decode 最低"同源：
+   **接受率不是速度的代理**）；
+3. ⇒ **256K 用 f16 定档**。q8_0 只在"必须腾内存装别的东西"时才启用，并接受解码 −35% 的代价。
+
+> 口径说明：本表每个 arm **各 1 次冷跑**（每轮含 26 分钟预填充）。两臂 acceptance 匹配 ⇒
+> 差异不是采样运气；但按本仓库"关键配置 3 连测"的纪律，若要把它作为硬决策依据，建议补做复测。
+
+## 7. 复现要点
 
 ```bash
 # 1) 起服务：ctx 直接给原生上限
