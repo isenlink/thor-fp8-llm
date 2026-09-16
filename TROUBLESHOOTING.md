@@ -583,15 +583,24 @@ W model has unused tensor blk.64.nextn.eh_proj.weight (size = 27852800 bytes) --
 → 之后全部 `Connection refused`；`dmesg` 可见 `Out of memory: Killed process (llama-server)`。
 **重复同一提示词不会触发**。
 
-**根因**：**运行期存在"每新提示词 ~626 MB"的常驻内存增长且不释放**（大页池占用不变，增长在常规内存侧）。
-**根因未定**，已用 A/B 排除三个假设（大页池、CUDA graph、`--ctx-checkpoints`）。
+**根因（2026-09-16 已定案）**：**llama-server 的主机侧 prompt cache 上限超过本机可用内存**。
+`--cache-ram` **默认为 8192 MiB（8 GiB）**，每处理一个**新提示词**就往里存一份状态快照
+（快照含该 slot 的上下文检查点；**一个检查点实测 149.8 MiB，且只对应 42 个 token**）。
+本板 58 GiB 内存里 46 GiB 是大页池（CUDA 分配必需，**不能缩**），常规侧只剩 ~7.5 GB
+⇒ **缓存还没涨到自己的 8 GiB 天花板，进程先被 OOM 杀了**。
+
+**判据（剂量-反应）**：只改 `--cache-ram`，看内存平台是否随它移动——
+`0` → +0.7 GB 后平坦；`512` → +1.2 GB 后平坦；**默认 → 线性增长至 OOM** ⇒ 命中本问题。
 
 **解法**：
-1. **每 10 条不同提示词重启一次 server**（重复同一提示词可无限次）；
-2. 启动前 `pkill -9 -x llama-server` 确认无残留（**绝不用 `pkill -f`**，会连坐 ssh 自身命令行）；
-3. 长跑期间盯 `MemAvailable` 与进程 RSS，不要只看 `free`。
+```bash
+llama-server ... --cache-ram 512     # 推荐：内存封顶，且前缀缓存仍可用
+llama-server ... --cache-ram 0       # 最省，但会关闭前缀缓存（连带 --cache-idle-slots），
+                                     # 破坏"一次载入、反复提问"（长上下文 TTFT 秒级那个用法）
+```
+（旧规避"每 10 个提示词重启一次"已被该 flag 取代。）
 
-📄 完整取证曲线、判别实验与已排除假设见
+📄 完整证据链（判别实验、三个被排除的假设、三臂剂量-反应表、源码位置）见
 [docs/05-system-tuning/runtime-memory-growth-2026-09-16.md](docs/05-system-tuning/runtime-memory-growth-2026-09-16.md)
 
 ### D10. 跑分比同配置高一大截——把预填充吞吐当成了解码吞吐
