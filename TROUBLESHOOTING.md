@@ -540,6 +540,14 @@ llama.cpp 链式投机直接抄参数是负收益。**但机型瓶颈画像一�
 - 有门控：见 [D1](#d1-mtp-深起草反而变慢负收益)（深起草 + 高置信门控 = 另一条曲线）；
 - **硬上限 = draft 头训练时的 block size**（见 [D7](#d7-请求深度超过-draft-头训练块大小被-clamp)）。
 
+> ⚠️ **2026-09-16 重要补充（本栈实测）**：在上述"无门控甜点"确定之后，我们又在本栈
+> （NVFP4-MTP-HIGH + tcgen05 build）上**把门控维度完整扫了一遍**（p_min 0.4/0.5/0.6 × 深度 3/5/7）：
+> **没有任何一档能打赢无门控的最优配置**（MTP 各门控档 17.1-18.4 vs 无门控 n3 = 20.32；
+> 块扩散 n7+门控 22.09 vs 无门控 n5 = 23.27）。
+> ⇒ **本栈上不要设 `p-min`**（D1 里的"深起草 + p-min 0.6"配方来自另一条量化路线的 build，
+> **跨栈抄参数负收益**）。数据见
+> [docs/04-nvfp4-optimization/speculative-drafting-recipes-2026-09-16.md](docs/04-nvfp4-optimization/speculative-drafting-recipes-2026-09-16.md) §2.4。
+
 📄 数据见 [docs/04-nvfp4-optimization/speculative-drafting-recipes-2026-09-16.md](docs/04-nvfp4-optimization/speculative-drafting-recipes-2026-09-16.md) §2
 
 ### D7. 请求深度超过 draft 头训练块大小（被 clamp）

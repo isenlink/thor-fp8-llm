@@ -1,6 +1,6 @@
 # Speculative drafting recipes for Qwen3.8-27B on DRIVE Thor (paired measurements)
 
-**English summary**: Paired measurements on a 27B NVFP4 target with two drafter families (built-in/external MTP and DFlash2 block diffusion) give concrete recipe numbers: with no confidence gating the MTP depth sweet spot is n_max=2–3, the DFlash2 sweet spot is n_max=5, a 560 MB mixed-quantization draft reproduces the 1.14 GB draft's output byte-for-byte (30/30), and the drafting gain is strongly content-type dependent (code +28%, Chinese prose −13%).
+**English summary**: Paired measurements on a 27B NVFP4 target with two drafter families (built-in/external MTP and DFlash2 block diffusion) give concrete recipe numbers: with no confidence gating the MTP depth sweet spot is n_max=2–3 and the DFlash2 sweet spot is n_max=5 with a flat n4–n7 plateau (21.49 → 23.27 tok/s), a 560 MB mixed-quantization draft reproduces the 1.14 GB draft's output byte-for-byte (30/30), the drafting gain is strongly content-type dependent (code +28%, Chinese prose −13%), `draft-dspark` is the same code path as `draft-dflash` (one fewer effective slot, no benefit), and enabling `--spec-draft-p-min` gating is a net loss on this stack at every depth tried.
 
 # 投机解码草稿配方实测（2026-09-16）
 
@@ -40,19 +40,63 @@
 
 ### 2.2 DFlash2 块扩散草稿（外挂 560 MB）
 
-| n_max | 全类中位 | 中文类中位 | acceptance |
+| n_max | 全类中位 | acceptance | mean len |
 |---|---:|---:|---:|
-| 3 | 19.10† | 17.19 | 0.45 |
-| **5** | **23.27** | **20.24** | 0.34 |
-| 6 | 22.54 | 19.85 | 0.29 |
-| 7 | 22.93 | 19.21 | 0.26 |
+| 3 | 21.49 | 0.496 | 2.49 |
+| 4 | 22.88 | 0.456 | 2.81 |
+| **5** | **23.27** | 0.34 | 2.69 |
+| 6 | 22.54 | 0.29 | 2.71 |
+| 7 | 22.93 | 0.26 | 2.82 |
 
-（† 该行为 Q4_K_M 档草稿；其余为同族 560 MB 档。同档内 n5 之后走平）
+（同一 560 MB 草稿档；n3/n4 为 2026-09-16 补齐，其余更早同批）
 
-- **甜点 = n_max 5**；块扩散草稿一次前向出一整块，深度几乎不增加草稿成本；
+- **甜点 = n_max 5，且 n4-n7 全部落在 22.5-23.3（±2%）** ⇒ 深度在此区间不敏感，
+  **按 n5 定档即可**，不必精调；
+- 曲线形状与内置 MTP **相反**：MTP 是"越深越慢"（n4 起单调下降），块扩散是"一步到位后走平"
+  ——因为草稿每轮只做一次前向、深度几乎不增加草稿侧成本；
 - **硬上限 = draft 头训练时的 block size**（本模型 = 8）。请求 `n_max=9` 时服务端明确打印
   `requested draft size (n_max=9) exceeds the trained block size 8 -- clamping to 8`
   ⇒ **扫深度前先读 draft 头的 block_size 元数据**，超过它没有意义。
+
+### 2.3 `draft-dspark` 与 `draft-dflash` 是**同一份实现**（别再当两条路线）
+
+| 配置 | 全类中位 | acceptance | mean len |
+|---|---:|---:|---:|
+| `draft-dspark` n_max=5 | 22.89 | 0.456 | 2.81 |
+| `draft-dspark` n_max=7 | 22.51 | 0.339 | 3.03 |
+| `draft-dflash` n_max=4 | 22.88 | 0.456 | 2.81 |
+| `draft-dflash` n_max=6 | 22.54 | 0.29 | 2.71 |
+
+- 服务端日志**两行都来自同一实现**：`common_speculative_impl_draft_dflash: adding speculative
+  implementation 'draft-dspark'` —— dspark 只是同一代码路径的另一个入口名；
+- 数字上 **`dspark` n_max=N ≈ `dflash` n_max=N−1**（n5 dspark 与 n4 dflash 的中位数/接受率/mean len
+  **三位小数完全相同**），即 dspark 内部吃掉一个草稿槽位；
+- ⇒ **`dspark` 不提供任何额外收益**，选 `dflash` 即可（少一个要排查的变量）。
+  历史记录里"dspark 尝试（n_max=9 被 clamp）"实际上就是 dflash 路径。
+- 附带结论：不再出现 clamp 警告 ⇒ **n_max ≤ block size(8) 时不会被截断**，与 §2.2 一致。
+
+### 2.4 置信门控（`--spec-draft-p-min`）在本栈**无收益**
+
+同一 6 题集下的门控扫描（MTP 与块扩散各档）：
+
+| 配置 | 全类中位 | 对照（同深度、p_min=0） | acceptance | mean len |
+|---|---:|---|---:|---:|
+| MTP n3, p_min=0.6 | 18.35 | 20.32 ❌ −10% | 0.797 | 2.85 |
+| MTP n5, p_min=0.6 | 17.85 | 17.26 ≈ +3% | 0.723 | 3.17 |
+| MTP n7, p_min=0.6 | 17.67 | 15.11 ✅ +17% | 0.683 | 3.33 |
+| MTP n7, p_min=0.4 | 17.12 | 15.11 +13% | 0.476 | 3.33 |
+| DFlash2 n7, p_min=0.5 | 22.09 | 22.93 ❌ −4% | 0.523 | 3.38 |
+
+**三条结论**：
+1. **没有任何一档打赢无门控的最优配置**（MTP 无门控 n3 = 20.32；块扩散无门控 n5 = 23.27）；
+2. 门控把深度曲线**压平**在 17-18 t/s（MTP 各档与深度几乎无关）——说明门控的 per-step 开销
+   抵消了它带来的接受率提升；
+3. **接受率高 ≠ 更快**：n7 门控把 acceptance 从 0.27 抬到 0.683，速度仍只有 17.67
+   （对比 §2.1 无门控 n7 的 15.11，确实是 +17%，但离 n3 的 20.32 还差 13%）。
+   ⇒ 论文式"深起草 + 高置信门控"配方**在本栈不成立**（该配方来自另一条量化路线的 build，
+   **跨栈抄参数会负收益**——与 `TROUBLESHOOTING.md` D1 的告诫一致）。
+
+**实操建议**：本栈就用 **`--spec-draft-n-max` 定档、不要设 `p-min`**（保持默认 0）。
 
 ## 3. 草稿配方：能省的内存别浪费
 
@@ -95,6 +139,8 @@
 | 不建议 | 外挂 MTP-Q4_0（+1.37 GB）、Q4_K_M 草稿（+1.14 GB） | 18.5 / 18.6 | 1.42x | 白占 |
 
 - 长文场景（16K 输入）两者差距仍在 **+10.8%**（24.50 vs 22.12，见 `05-system-tuning/kv-budget-and-256k-2026-09-16.md`）；
+- **不要设 `--spec-draft-p-min`**：本栈完整扫过门控维度，各档全部低于无门控最优（见 §2.4）；
+- **用 `dflash` 而不是 `dspark`**：两者是同一份实现，dspark 白吃一个草稿槽位（见 §2.3）；
 - **换草稿/改深度属于"零编译成本"的一档**，任何栈变更（换 build / 换量化）后都值得重扫一遍。
 
 ## 6. 复现要点（含两条必踩的坑）

@@ -40,7 +40,7 @@ DRIVE Thor 的民间本地 LLM 部署资料几乎为零：官方只提供 DriveO
 | B3 定案（perj 修复 + MTP K12 p0.5） | 2K decode **31.02 tok/s**（+20.6%）、128K decode **19.61 tok/s**（+16.2%），输出与基线逐字一致（见 04 目录 b3-final-results） |
 | 9-13 后续优化复盘 | B4/B5 verify kernel 路线、vocab crop、draft F8 均经配对 A/B 否决；19.61 tok/s 维持生产最优（见 04 目录 takeover / draft-levers / incidents） |
 | 9-16 DFlash2 结论修订 | **撤回**"DFlash2 已淘汰"：当时"acc 崩"的真因是目标模型权重被重编码损坏，非 DFlash2 本身；配对重测（6 类 × 5 题）DFlash2 **全面快于内置 MTP**（全类中位 +8.1%、代码类 +28.3%），且草稿量化到 560MB 后**输出逐字一致**（见 04 目录 `dflash2-revalidation-2026-09-16.md`） |
-| 9-16 投机草稿配方 | 无置信门控时：内置 MTP 甜点 **n_max=2-3**、DFlash2 甜点 **n_max=5**（硬上限 = draft 头 block size 8）；外挂 MTP 与内置**完全等价**（20.31 vs 20.32，白占 1.37G）；收益**强依赖内容类型**（见 04 目录 `speculative-drafting-recipes`） |
+| 9-16 投机草稿配方 | 无置信门控时：内置 MTP 甜点 **n_max=2-3**、DFlash2 甜点 **n_max=5**（n4-n7 全在 ±2% 平台区；硬上限 = draft 头 block size 8）；外挂 MTP 与内置**完全等价**（20.31 vs 20.32，白占 1.37G）；**`p-min` 门控各档全部低于无门控最优**（不要设）；**`dspark` 与 `dflash` 是同一实现**（无额外收益）；收益**强依赖内容类型**（见 04 目录 `speculative-drafting-recipes`） |
 | 9-16 KV 预算与 256K | 65 层中**只有 16 层全注意力**（其余线性注意力）⇒ KV 仅 **64 KB/token**，256K f16 只 16.8 GB，**实测跑通**；TTFT 30K→256K = 67 s→25.6 min，解码仅 −28%；**同一长文后续提问 TTFT 5.9 s**（前缀缓存）（见 05 目录 `kv-budget-and-256k`） |
 | 9-16 运行期内存增长 | 每**新提示词** +626 MB 不释放 ⇒ 约 12 条不同提示词后 OOM（重复同一提示词不触发）；已 A/B 排除 3 个假设、**根因未定**；规避 = 每 10 条不同提示词重启实例（见 05 目录 `runtime-memory-growth`） |
 | GPU 大页池 | 20G → 42G（后续扩至 46G）并固化；⚠️ **只能扩不能缩**（缩池会导致 `unable to allocate CUDA0 buffer`，A/B 实测见 05 目录） |
