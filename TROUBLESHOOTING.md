@@ -42,6 +42,13 @@
 | 长任务看到"完成"回显，但其实没完成 | [D3](#d3-监控盯错目标假完成) |
 | 模型一样但速度差一倍（社区能跑 2× 我们不行） | [D4](#d4-同模型速度差一倍) |
 | 输出速度在创作类任务上远低于问答类 | [D5](#d5-创作任务加速失效) |
+| 长跑中 SSH 掉线、`ping` 不通（板端唯一网口） | [A9](#a9-usb-网卡板端唯一网口跑长任务时掉线) |
+| 基准跑到第 12 条左右 server 就 `Connection refused` | [D9](#d9-连续跑不同提示词server-在-12-条时被-oom-杀掉) |
+| 深起草（n-max 4+）反而更慢 | [D6](#d6-深度扫描无门控时的甜点在-n2-n3不是越深越好) |
+| 日志报 `exceeds the trained block size … clamping to` | [D7](#d7-请求深度超过-draft-头训练块大小被-clamp) |
+| 加载日志一堆 `unused tensor … nextn … ignoring` | [D8](#d8-dflash-模式下主模型报一堆-unused-tensor--nextn--ignoring) |
+| 跑分比同配置的他人数字高一大截 | [D10](#d10-跑分比同配置高一大截把预填充吞吐当成了解码吞吐) |
+| 改了 `-c` 但结果与短上下文逐位相同 | [D11](#d11-把--c-调大就当测了长上下文) |
 | `sudo mkdir /mnt/xxx` 失败，挂载点建不了 | [E1](#e1-挂载点必须建在-media) |
 | fstab 里写了挂载但开机没挂上（静默跳过） | [E2](#e2-fstab-条目静默失效nfs-helper-缺失) |
 | USB 盘写速只有 32MB/s（理论值 ~400MB/s） | [E3](#e3-usb-盘写入慢) |
@@ -207,6 +214,27 @@ systemd unit / cron / rc.local 全都活在 overlay 上，格式化时一起被�
 **根因**：Tegra xUSB 控制器的热拔处理 bug。
 
 **解法**：物理重插恢复；**重要操作后建议 `reboot` 而非热插拔**。
+
+📄 详见 [docs/01-hardware-recon/hardware-archive.md](docs/01-hardware-recon/hardware-archive.md) §5
+
+### A9. USB 网卡（板端唯一网口）跑长任务时掉线
+
+**症状**：长时间跑基准/下载中途 SSH 掉线、`ping` 不通，重启 `systemd-networkd` 才恢复；
+`dmesg` 可见 USB 网卡链路报错（如 `error -71`）。
+
+**根因**：USB 网卡的 **autosuspend（运行时省电休眠）**把链路挂起。
+**注意各板网卡型号不同**（RTL8153 / RTL8156 等，`lsusb` 确认），规则要按实际型号写。
+
+**解法**：对 USB 网卡与该链路集线器**持久化**禁止 autosuspend（`power/control=on`），
+写 udev 规则到 `/etc/udev/rules.d/`（**不要只 `echo on > …/power/control`——重启即失效**），
+写完 `udevadm test` 验证命中，并 `sync` 三次（`/etc` 在 overlay 上，防脏断电回滚）。
+
+```bash
+lsusb | grep -i -E 'realtek|8153|8156'          # 先确认型号与拓扑
+echo on | sudo tee /sys/bus/usb/devices/<链路>/power/control
+# 持久化：/etc/udev/rules.d/90-usb-net-nosuspend.rules
+#   ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="0bda", ATTR{idProduct}=="<型号>", ATTR{power/control}="on"
+```
 
 📄 详见 [docs/01-hardware-recon/hardware-archive.md](docs/01-hardware-recon/hardware-archive.md) §5
 
@@ -494,6 +522,93 @@ llama.cpp 链式投机直接抄参数是负收益。**但机型瓶颈画像一�
 深起草无处发力。
 
 **结论**：这不是 bug。EXP1 配置下创作任务不掉速（11.02 ≈ 基线），等价于"免费期权"。
+
+> ⚠️ **2026-09-16 补充（量化版）**：内容类型的影响比本条记录更大——同一配置在**代码类 29.4 t/s**
+> 与**中文散文类 16.1 t/s** 之间差 **1.8 倍**；块扩散草稿在中文创作类 acceptance 掉到 0.17-0.27
+> （英文/代码 0.31-0.76）。**报数必须绑定内容类型**。完整 6 类 × 5 题对照见
+> [docs/04-nvfp4-optimization/speculative-drafting-recipes-2026-09-16.md](docs/04-nvfp4-optimization/speculative-drafting-recipes-2026-09-16.md) §4。
+
+### D6. 深度扫描：无门控时的甜点在 n2-n3，不是越深越好
+
+**症状**：按"深起草更快"的直觉扫深度，结果 n4 起**单调变慢**（内置 MTP：n3 20.3 → n5 17.3 → n7 15.1 t/s）。
+
+**根因**：**没有置信门控（`--spec-draft-p-min`）时**，MTP 头越靠后越不准（acceptance 0.62@n2 → 0.27@n7），
+而每轮验证开销是实打实的 ⇒ 净亏。块扩散草稿（DFlash2）则相反：甜点在 **n5**（一次前向出整块，深度几乎不加成本）。
+
+**解法**：**先确认是否启用 p-min 门控**，再定深度——
+- 无门控：内置 MTP `--spec-draft-n-max 2~3`；DFlash2 `--spec-draft-n-max 5`；
+- 有门控：见 [D1](#d1-mtp-深起草反而变慢负收益)（深起草 + 高置信门控 = 另一条曲线）；
+- **硬上限 = draft 头训练时的 block size**（见 [D7](#d7-请求深度超过-draft-头训练块大小被-clamp)）。
+
+📄 数据见 [docs/04-nvfp4-optimization/speculative-drafting-recipes-2026-09-16.md](docs/04-nvfp4-optimization/speculative-drafting-recipes-2026-09-16.md) §2
+
+### D7. 请求深度超过 draft 头训练块大小（被 clamp）
+
+**症状**：启动日志出现
+
+```
+requested draft size (n_max=9, n_min=0) exceeds the trained block size 8 -- clamping to 8
+```
+
+**根因**：块扩散 draft 头的**训练块大小**就是它一次能出的最大块（本例 8）；请求更大的 `n_max` 无意义。
+
+**解法**：**扫深度前先读 draft 头元数据的 block_size**（GGUF 元数据即可读到，不必加载模型）；
+`n_max` 超过它只会被 clamp。
+
+### D8. DFlash 模式下主模型报一堆 `unused tensor … nextn … -- ignoring`
+
+**症状**：启用外挂块扩散草稿（`-md <draft> --spec-type draft-dflash`）时，加载日志出现大量
+
+```
+W model has unused tensor blk.64.nextn.eh_proj.weight (size = 27852800 bytes) -- ignoring
+```
+
+**根因**：**正常现象**。该模式下草稿由外挂模型提供，主模型自带的 MTP 头（`nextn.*`）不参与计算。
+反之，跑内置 MTP 时**不要**挂 `-md`，否则同样会浪费。
+
+**影响**：这些张量仍占内存（一个 MTP 头约 200+ MB）。它**不是**数值损坏的信号
+（数值损坏的特征是短补全输出乱码 / acceptance 恒 0）。
+
+### D9. 连续跑不同提示词，server 在 ~12 条时被 OOM 杀掉
+
+**症状**：基准跑到第 12-13 个**不同**提示词时，客户端报 `Remote end closed connection without response`
+→ 之后全部 `Connection refused`；`dmesg` 可见 `Out of memory: Killed process (llama-server)`。
+**重复同一提示词不会触发**。
+
+**根因**：**运行期存在"每新提示词 ~626 MB"的常驻内存增长且不释放**（大页池占用不变，增长在常规内存侧）。
+**根因未定**，已用 A/B 排除三个假设（大页池、CUDA graph、`--ctx-checkpoints`）。
+
+**解法**：
+1. **每 10 条不同提示词重启一次 server**（重复同一提示词可无限次）；
+2. 启动前 `pkill -9 -x llama-server` 确认无残留（**绝不用 `pkill -f`**，会连坐 ssh 自身命令行）；
+3. 长跑期间盯 `MemAvailable` 与进程 RSS，不要只看 `free`。
+
+📄 完整取证曲线、判别实验与已排除假设见
+[docs/05-system-tuning/runtime-memory-growth-2026-09-16.md](docs/05-system-tuning/runtime-memory-growth-2026-09-16.md)
+
+### D10. 跑分比同配置高一大截——把预填充吞吐当成了解码吞吐
+
+**症状**：从 server 日志统计 t/s，算出来比同配置的他人数字高一大截
+（我们曾据此对外报"DFlash2 55-62 t/s"，真值 48.7，被迫撤回）。
+
+**根因**：server 对**同一任务**打两行计时，`prompt eval time = …`（预填充，60-150 t/s）
+里**含子串 `eval time =`**；宽松正则会把两行混进同一列表，中位数被抬到**虚假的 40-60 档**。
+
+**解法**：只匹配**行首缩进后的裸 `eval time`**（或用 `(?<!prompt )eval time` 否定后顾）；
+过滤 <20 token 的短样本；报中位数 + 区间；**报数前先手工核一条原始日志行**。
+
+### D11. 把 `-c` 调大就当"测了长上下文"
+
+**症状**：`-c 8192` 改成 `-c 32768` 后重测，结果与短上下文**逐位相同**，结论无法解释。
+
+**根因**：**`-c` 只是容量预留**。提示词若仍只有几十 token，实际 KV 长度没变，
+解码速度自然不变（解码只取决于实际 KV 长度 + 权重读取）。
+
+**解法**：**必须构造长 prompt**（用 `/tokenize` 精确校准目标 token 数）；
+判据 = 日志里 `prompt eval time = … N tokens`，**N 没上去就是没测到**。
+
+📄 两个口径陷阱的完整说明与正确代码见
+[docs/06-benchmarks/benchmark-methodology-2026-09-16.md](docs/06-benchmarks/benchmark-methodology-2026-09-16.md) §1、§2
 
 ---
 

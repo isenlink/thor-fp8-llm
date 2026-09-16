@@ -41,7 +41,10 @@ experiments, and the measured data — to save the next person the same groping.
 | B3 final (perj fix + MTP K12 p0.5) | 2K decode **31.02 tok/s** (+20.6%), 128K decode **19.61 tok/s** (+16.2%), output byte-identical to baseline (see 04/ b3-final-results) |
 | Post-9/13 optimization review | B4/B5 verify-kernel work, vocab crop, and draft F8 were rejected by paired A/B tests; 19.61 tok/s remains the production best (see 04/ takeover, draft-levers, incidents) |
 | 9/16 DFlash2 verdict revised | The earlier "DFlash2 rejected" call is **retracted**: the collapsed acceptance came from a numerically damaged *target model*, not from DFlash2. Paired re-run (6 content types × 5 prompts): DFlash2 beats built-in MTP across the board (median +8.1%, code +28.3%), and quantizing the draft to 560 MB yields **byte-identical output** (see 04/ `dflash2-revalidation-2026-09-16.md`) |
-| GPU hugepage pool | 20G → 42G (later expanded to 46G), persisted |
+| 9/16 Drafting recipes | Without confidence gating: built-in MTP sweet spot **n_max=2-3**, DFlash2 sweet spot **n_max=5** (hard cap = the draft head's trained block size, 8); external MTP is **exactly equivalent** to built-in (20.31 vs 20.32 tok/s, wasting 1.37 GB); the gain is **strongly content-type dependent** (see 04/ `speculative-drafting-recipes`) |
+| 9/16 KV budget & 256K | Only **16 of 65 layers are full-attention** ⇒ KV costs just **64 KB/token**, so 256K in f16 needs 16.8 GB and **runs end-to-end**; TTFT 67 s (30K) → 25.6 min (256K) while decode drops only −28%; follow-up questions on the same document: **TTFT 5.9 s** (prefix cache) (see 05/ `kv-budget-and-256k`) |
+| 9/16 Runtime memory growth | +626 MB per **novel prompt**, never released ⇒ OOM after ~12 distinct prompts (repeating one prompt does not trigger it); three hypotheses ruled out by A/B, **root cause still open**; mitigation = restart every 10 distinct prompts (see 05/ `runtime-memory-growth`) |
+| GPU hugepage pool | 20G → 42G (later expanded to 46G), persisted; ⚠️ **grow-only**: shrinking the pool breaks model loading (`unable to allocate CUDA0 buffer`, A/B measured) |
 | Full-load temperature | 72–74 °C (passive cooling, stable) |
 
 ## Repo structure
@@ -52,9 +55,9 @@ docs/
   01-hardware-recon/      Board environment recon: memory truth, carveout, tmpfs, storage layout
   02-cross-compile/       x86 host cross-compiling aarch64 + sm_101a full toolchain (11 pitfalls)
   03-model-conversion/    FP8 → GGUF conversion, three-layer obstacles + model file ledger
-  04-nvfp4-optimization/  NVFP4 quantization + speculative-decoding tuning (incl. failed MTP K7, B3 kernel-level optimization decision chain, microbench breakdown, correctness-incident fix chain, final results, rejected follow-up paths, GPU deadlock discipline, multi-board parallel testing readiness)
-  05-system-tuning/       Hugepage pool expansion & persistence, overlay, power-loss recovery, temperature
-  06-benchmarks/          Per-stage benchmarks + community comparison
+  04-nvfp4-optimization/  NVFP4 quantization + speculative-decoding tuning (incl. failed MTP K7, B3 kernel-level optimization decision chain, microbench breakdown, correctness-incident fix chain, final results, rejected follow-up paths, GPU deadlock discipline, multi-board parallel testing readiness, **drafting recipes: depth sweet spots / mixed-precision draft / content-type dependence**, **the DFlash2 verdict retraction**)
+  05-system-tuning/       Hugepage pool expansion & persistence (**incl. proof that the pool is grow-only**), overlay, power-loss recovery, temperature, **KV budget & 256K measurements**, **runtime memory-growth investigation**
+  06-benchmarks/          Per-stage benchmarks + community comparison, **benchmark methodology (three measurement traps + paired design)**
 scripts/                  Board/host helper scripts (UART probe, GPU pool check, B3 kernel microbench suite)
 ```
 

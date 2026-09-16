@@ -40,7 +40,10 @@ DRIVE Thor 的民间本地 LLM 部署资料几乎为零：官方只提供 DriveO
 | B3 定案（perj 修复 + MTP K12 p0.5） | 2K decode **31.02 tok/s**（+20.6%）、128K decode **19.61 tok/s**（+16.2%），输出与基线逐字一致（见 04 目录 b3-final-results） |
 | 9-13 后续优化复盘 | B4/B5 verify kernel 路线、vocab crop、draft F8 均经配对 A/B 否决；19.61 tok/s 维持生产最优（见 04 目录 takeover / draft-levers / incidents） |
 | 9-16 DFlash2 结论修订 | **撤回**"DFlash2 已淘汰"：当时"acc 崩"的真因是目标模型权重被重编码损坏，非 DFlash2 本身；配对重测（6 类 × 5 题）DFlash2 **全面快于内置 MTP**（全类中位 +8.1%、代码类 +28.3%），且草稿量化到 560MB 后**输出逐字一致**（见 04 目录 `dflash2-revalidation-2026-09-16.md`） |
-| GPU 大页池 | 20G → 42G（后续扩至 46G）并固化 |
+| 9-16 投机草稿配方 | 无置信门控时：内置 MTP 甜点 **n_max=2-3**、DFlash2 甜点 **n_max=5**（硬上限 = draft 头 block size 8）；外挂 MTP 与内置**完全等价**（20.31 vs 20.32，白占 1.37G）；收益**强依赖内容类型**（见 04 目录 `speculative-drafting-recipes`） |
+| 9-16 KV 预算与 256K | 65 层中**只有 16 层全注意力**（其余线性注意力）⇒ KV 仅 **64 KB/token**，256K f16 只 16.8 GB，**实测跑通**；TTFT 30K→256K = 67 s→25.6 min，解码仅 −28%；**同一长文后续提问 TTFT 5.9 s**（前缀缓存）（见 05 目录 `kv-budget-and-256k`） |
+| 9-16 运行期内存增长 | 每**新提示词** +626 MB 不释放 ⇒ 约 12 条不同提示词后 OOM（重复同一提示词不触发）；已 A/B 排除 3 个假设、**根因未定**；规避 = 每 10 条不同提示词重启实例（见 05 目录 `runtime-memory-growth`） |
+| GPU 大页池 | 20G → 42G（后续扩至 46G）并固化；⚠️ **只能扩不能缩**（缩池会导致 `unable to allocate CUDA0 buffer`，A/B 实测见 05 目录） |
 | 满载温度 | 72–74°C（被动散热，稳定） |
 
 ## Repo structure / 目录结构（整理中）
@@ -51,9 +54,9 @@ docs/
   01-hardware-recon/      板端环境摸底：显存真相、carveout、tmpfs、存储布局
   02-cross-compile/       x86 主机交叉编译 aarch64 + sm_101a 全套工具链
   03-model-conversion/    FP8 → GGUF 转换三层障碍（架构名分发/分片命名/numpy ABI）+ 模型文件台账
-  04-nvfp4-optimization/  NVFP4 量化路线实验记录（含失败实验 MTP K7、B3 kernel 级优化决策链、microbench 拆解、正确性事故修复链、定案成绩、后续否决路线与 GPU 死锁事故纪律、多板并行测试准备）
-  05-system-tuning/       GPU 大页池扩容与固化、overlay 持久化方法论、断电自愈架构、温度管理
-  06-benchmarks/          各阶段基准数据与复现命令（含 200K 基准台账）
+  04-nvfp4-optimization/  NVFP4 量化路线实验记录（含失败实验 MTP K7、B3 kernel 级优化决策链、microbench 拆解、正确性事故修复链、定案成绩、后续否决路线与 GPU 死锁事故纪律、多板并行测试准备、**投机草稿配方（深度甜点/混合量化/内容类型依赖）**、**DFlash2 结论撤销**）
+  05-system-tuning/       GPU 大页池扩容与固化（**含"只能扩不能缩"的反证**）、overlay 持久化方法论、断电自愈架构、温度管理、**KV 预算与 256K 实测**、**运行期内存增长调查**
+  06-benchmarks/          各阶段基准数据与复现命令（含 200K 基准台账）、**基准方法论（三个口径陷阱 + 配对设计）**
 scripts/                  板端/主机实用脚本（串口探测、GPU 池检查、B3 kernel microbench 全家桶）
 ```
 
