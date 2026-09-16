@@ -39,6 +39,7 @@ DRIVE Thor 的民间本地 LLM 部署资料几乎为零：官方只提供 DriveO
 | B3 kernel 优化（standalone） | NVFP4 MMVQ gemv 144→207 GB/s（+44%），根因 = y 向量重复 L2 读取（见 04 目录） |
 | B3 定案（perj 修复 + MTP K12 p0.5） | 2K decode **31.02 tok/s**（+20.6%）、128K decode **19.61 tok/s**（+16.2%），输出与基线逐字一致（见 04 目录 b3-final-results） |
 | 9-13 后续优化复盘 | B4/B5 verify kernel 路线、vocab crop、draft F8 均经配对 A/B 否决；19.61 tok/s 维持生产最优（见 04 目录 takeover / draft-levers / incidents） |
+| 9-16 DFlash2 结论修订 | **撤回**"DFlash2 已淘汰"：当时"acc 崩"的真因是目标模型权重被重编码损坏，非 DFlash2 本身；配对重测（6 类 × 5 题）DFlash2 **全面快于内置 MTP**（全类中位 +8.1%、代码类 +28.3%），且草稿量化到 560MB 后**输出逐字一致**（见 04 目录 `dflash2-revalidation-2026-09-16.md`） |
 | GPU 大页池 | 20G → 42G（后续扩至 46G）并固化 |
 | 满载温度 | 72–74°C（被动散热，稳定） |
 

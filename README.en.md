@@ -40,6 +40,7 @@ experiments, and the measured data — to save the next person the same groping.
 | B3 kernel optimization (standalone) | NVFP4 MMVQ gemv 144→207 GB/s (+44%), root cause = repeated L2 reads of the y vector (see 04/) |
 | B3 final (perj fix + MTP K12 p0.5) | 2K decode **31.02 tok/s** (+20.6%), 128K decode **19.61 tok/s** (+16.2%), output byte-identical to baseline (see 04/ b3-final-results) |
 | Post-9/13 optimization review | B4/B5 verify-kernel work, vocab crop, and draft F8 were rejected by paired A/B tests; 19.61 tok/s remains the production best (see 04/ takeover, draft-levers, incidents) |
+| 9/16 DFlash2 verdict revised | The earlier "DFlash2 rejected" call is **retracted**: the collapsed acceptance came from a numerically damaged *target model*, not from DFlash2. Paired re-run (6 content types × 5 prompts): DFlash2 beats built-in MTP across the board (median +8.1%, code +28.3%), and quantizing the draft to 560 MB yields **byte-identical output** (see 04/ `dflash2-revalidation-2026-09-16.md`) |
 | GPU hugepage pool | 20G → 42G (later expanded to 46G), persisted |
 | Full-load temperature | 72–74 °C (passive cooling, stable) |
 

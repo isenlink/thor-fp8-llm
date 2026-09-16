@@ -23,7 +23,7 @@
 | 配置 | tok/s | 备注 |
 |---|---|---|
 | A5-1 NEXTN/MTP + FP8 KV | 21.98 | |
-| A5-2 DFlash2 blk8 | 17.18 | 比 A5-1 慢 21.83%，淘汰 |
+| A5-2 DFlash2 blk8 | 17.18 | 比 A5-1 慢 21.83% —— ⚠️**该读数不能用于判定 DFlash2 本身**：当时目标模型权重已被重编码损坏（见 `04-nvfp4-optimization/dflash2-revalidation-2026-09-16.md`） |
 | QUASAR A2 K7 | 37.1 | 64K 最快但有 6.7GiB BF16 扩展代价 |
 | 某配置 | 8.522 | 业务质量不合格 |
 

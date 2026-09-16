@@ -67,7 +67,7 @@
 
 **关键结论**：
 - MTP 加速 +19.6%（低于预期 +30%），瓶颈在显存带宽（底层单速 ~10.7 t/s 被带宽锁死）
-- 剩余优化路线：tcgen05 kernel（prefill ×2 潜力）+ dflash2 树形投机（llama.cpp 暂不支持，已搁置）
+- 剩余优化路线：tcgen05 kernel（prefill ×2 潜力）+ dflash2 树形投机（~~llama.cpp 暂不支持，已搁置~~ → ⚠️**2026-09-16 修订：llama.cpp 已原生支持** `--spec-type draft-dflash` / `draft-dspark`，本平台实测跑通且为当前最快草稿方案，见 `04-nvfp4-optimization/dflash2-revalidation-2026-09-16.md`）
 - 社区对照：FP8+MTP 34.91 t/s（不同板卡/配置，参考值）
 
 ### 3.2 GPU 计算能力验证
@@ -116,7 +116,7 @@
 | Qwen3.8-27B-NVFP4-MTP-COMPACT-LOW.gguf | 15.2G | 板载数据分区 | **服务运行中**（MTP，4096 ctx） |
 | Qwen3.8-27B-NVFP4-MTP-HIGHEST.gguf | 23.2G | 板载数据分区 | 已上板待测 |
 | Qwen3.8-27B-FP8（safetensors 分片） | 29G | 转换工作站 | 待转 GGUF |
-| DFlash2-FP8 draft（5 层） | 2.1G | 转换工作站 | 搁置（llama.cpp 不支持该架构，官方仅 SGLang/vLLM） |
+| DFlash2-FP8 draft（5 层） | 2.1G | 转换工作站 | ~~搁置（llama.cpp 不支持该架构）~~ → ⚠️**2026-09-16 修订：llama.cpp 已原生支持 `draft-dflash`，本平台实测为最快草稿**（见 `04-nvfp4-optimization/dflash2-revalidation-2026-09-16.md`）；GGUF 格式 draft 头可直接用 |
 | Qwen3-4B-Q4_K_M.gguf | 2.5G | 板载 | 对照用 |
 
 ---
@@ -142,7 +142,7 @@
 - [ ] HIGHEST vs COMPACT-LOW 质量盲测（HIGHEST 已上板）
 - [ ] 128K-192K 上下文实测（KV q8_0 量化）
 - [ ] tcgen05 kernel 集成 llama.cpp 主线（prefill ×2）
-- [ ] dflash2 树形投机：需自写转换器或等 llama.cpp 上游支持
+- [x] dflash2 树形投机：⚠️**2026-09-16 已可做**——llama.cpp 原生支持 `--spec-type draft-dflash`，本平台实测为当前最快草稿方案（见 `04-nvfp4-optimization/dflash2-revalidation-2026-09-16.md`）；无需自写转换器，GGUF draft 头直接可用
 
 ---
 
