@@ -1,0 +1,25 @@
+[Unit]
+Description=Hermes Agent (install + state on /brand_data, survives dirty power loss)
+Documentation=file:///brand_data/hermes/README.md
+After=network-online.target llama-server.service
+Wants=network-online.target
+# 服务由 restore-hermes.sh 在每次恢复时 ensure/enable
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=user
+Group=user
+Environment=HERMES_HOME=/brand_data/hermes/home
+Environment=PATH=/brand_data/hermes/bin:/usr/local/bin:/usr/bin:/bin
+Environment=HOME=/brand_data/hermes/home
+WorkingDirectory=/brand_data/hermes
+ExecStart=/brand_data/hermes/bin/hermes gateway run
+Restart=always
+RestartSec=15
+TimeoutStopSec=20
+StandardOutput=append:/brand_data/hermes/logs/hermes-service.log
+StandardError=append:/brand_data/hermes/logs/hermes-service.log
+
+[Install]
+WantedBy=multi-user.target
