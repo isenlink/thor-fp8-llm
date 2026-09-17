@@ -1,0 +1,27 @@
+# 夹具来源登记（防「自洽的假夹具」：spec 的键名写错时，手敲夹具会同错同源 ⇒ REPLAY 照过）
+# 列: fixture | source（SYNTHETIC = 手敲/无真工件来源） | source_sha16 | 改动的列（原件写 -） | 说明
+b6_200k_fail.metrics	SYNTHETIC	-	-	手敲（11:2x 审计时标记；§5.1 之前的遗留，键名/量级未与真臂对齐）
+b6_200k_off_fail.metrics	SYNTHETIC	-	-	手敲（11:2x 审计时标记；§5.1 之前的遗留，键名/量级未与真臂对齐）
+b6_200k_off_pass.metrics	SYNTHETIC	-	-	手敲（11:2x 审计时标记；§5.1 之前的遗留，键名/量级未与真臂对齐）
+b6_200k_pass.metrics	SYNTHETIC	-	-	手敲（11:2x 审计时标记；§5.1 之前的遗留，键名/量级未与真臂对齐）
+b6_200k_wrongctx.metrics	SYNTHETIC	-	-	手敲（11:2x 审计时标记；§5.1 之前的遗留，键名/量级未与真臂对齐）
+b9_128k_fail.metrics	SYNTHETIC	-	-	手敲（11:2x 审计时标记；§5.1 之前的遗留，键名/量级未与真臂对齐）
+b9_128k_pass.metrics	SYNTHETIC	-	-	手敲（11:2x 审计时标记；§5.1 之前的遗留，键名/量级未与真臂对齐）
+b9_128k_wrongctx.metrics	SYNTHETIC	-	-	手敲（11:2x 审计时标记；§5.1 之前的遗留，键名/量级未与真臂对齐）
+cps7_fail.metrics	SYNTHETIC	-	-	手敲（11:2x 审计时标记；§5.1 之前的遗留，键名/量级未与真臂对齐）
+cps7_pass.metrics	SYNTHETIC	-	-	手敲（11:2x 审计时标记；§5.1 之前的遗留，键名/量级未与真臂对齐）
+dematch_bad.metrics	SYNTHETIC	-	-	手敲（11:2x 审计时标记；§5.1 之前的遗留，键名/量级未与真臂对齐）
+dematch_good.metrics	SYNTHETIC	-	-	手敲（11:2x 审计时标记；§5.1 之前的遗留，键名/量级未与真臂对齐）
+found1_bad.metrics	SYNTHETIC	-	-	手敲（11:2x 审计时标记；§5.1 之前的遗留，键名/量级未与真臂对齐）
+found1_good.metrics	SYNTHETIC	-	-	手敲（11:2x 审计时标记；§5.1 之前的遗留，键名/量级未与真臂对齐）
+iso2_ratio.metrics	SYNTHETIC	-	-	手敲（11:2x 审计时标记；§5.1 之前的遗留，键名/量级未与真臂对齐）
+noKey.metrics	SYNTHETIC	-	-	手敲（11:2x 审计时标记；§5.1 之前的遗留，键名/量级未与真臂对齐）
+rb1_bad.out.metrics	SYNTHETIC	-	-	手敲（11:2x 审计时标记；§5.1 之前的遗留，键名/量级未与真臂对齐）
+rb1_good.out.metrics	SYNTHETIC	-	-	手敲（11:2x 审计时标记；§5.1 之前的遗留，键名/量级未与真臂对齐）
+rb2_g0_bad.metrics	evidence/20260917-1040-rb1-ws32k/rb1-ws32k.metrics.tsv	6e07fbbdd29c4686	RB1_MAIN_GBPS	由真臂原件只改 MAIN_GBPS 257.14→200
+rb2_g0_good.metrics	evidence/20260917-1040-rb1-ws32k/rb1-ws32k.metrics.tsv	6e07fbbdd29c4686	-	真臂原件（board1 10:41 rb1-ws32k 读数，未改）
+rb2_g1_high.metrics	evidence/20260917-1040-rb1-ws32k/rb1-ws32k.metrics.tsv	6e07fbbdd29c4686	-	真臂原件（board1 10:41 rb1-ws32k 读数，未改）
+rb2_g1_low.metrics	evidence/20260917-1040-rb1-ws32k/rb1-ws32k.metrics.tsv	6e07fbbdd29c4686	RB1_MAIN_GBPS	由真臂原件只改 MAIN_GBPS 257.14→120
+rb2_mem_prod_high.metrics	evidence/20260917-1148-rb2-gran/rb2-g1.metrics.tsv	be3f526989292646	-	真臂原件（board1 11:49 gran1 读数 main=226.85，未改；兼作 anchor/h0 的 pass 样本）
+rb2_mem_prod_low.metrics	evidence/20260917-1148-rb2-gran/rb2-g1.metrics.tsv	be3f526989292646	RB1_MAIN_GBPS	由真臂原件只改 MAIN_GBPS 226.85→140.0（h1 成立侧样本）
+rb2_mem_prod_dm.metrics	evidence/20260917-1148-rb2-gran/rb2-g1.metrics.tsv	be3f526989292646	RB1_MAIN_DMISMATCH	由真臂原件只改 DMISMATCH 0→5（负例：证明完整性行真的有牙）

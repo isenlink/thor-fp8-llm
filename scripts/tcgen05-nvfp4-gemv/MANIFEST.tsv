@@ -1,0 +1,57 @@
+# 列: group | file | tier | sha256_16 | lines | 说明
+	README.md	T1	7b3f48dbe1f7a9b9	133	包说明：目标/事实/收益/负结果黑名单/纪律机制/复现门槛/脱敏说明（源码：t4/share-package/README.md）
+01-tcgen05-nvfp4-gemv	host/test_t4_mmq_canon.cpp	T1	15a032605a16c0a9	198	canonical 布局重放单测（宿主）
+01-tcgen05-nvfp4-gemv	host/test_t4_mmq_pred.cpp	T1	488b4306729dc3d5	74	接入判据真值表单测（宿主）
+01-tcgen05-nvfp4-gemv	src/c58_v11_ggml.cu	T1	b86ecc76b636797c	496	v11：真实 GGML NVFP4 张量零 relayout 接入（canonical 板 = 生产字节）
+01-tcgen05-nvfp4-gemv	src/c58_v5_fp4_mma.cu	T1	01c1646746bbe0a0	368	tcgen05 NVFP4(block-scale) MMA 核心：idesc/SF 落点/K=64 子步
+01-tcgen05-nvfp4-gemv	src/c58_v9f_gran4.cu	T1	8f8563222ba32e8c	374	B9f warp-specialized 环（32 KB 握手单元）+ 三个判别变体（GRAN4/PRODADDR）
+01-tcgen05-nvfp4-gemv	src/c58_v9f_host.cpp	T1	08400809a418284f	312	宿主驱动（Driver API + dlopen，含数值参考）
+01-tcgen05-nvfp4-gemv	src/c58_v9f_host_prod.cpp	T1	6e0f151d5c36e21f	342	宿主驱动副本：+生产寻址布局（prodlay）模式
+01-tcgen05-nvfp4-gemv	src/t4_mmq.cu	T1	a020c4d152e2ef68	315	llama.cpp 接线点（launch/回读/落盘）
+01-tcgen05-nvfp4-gemv	src/t4_mmq.cuh	T1	5cd483b21c94c7aa	22	接缝声明（两处接缝：mmq.cu 与 mmvq.cu，只挂一处会静默失效）
+01-tcgen05-nvfp4-gemv	src/t4_mmq_aq.cuh	T1	58008ccb4014de58	192	设备端 A 侧 NVFP4 量化（不吃上游 q8_1 布局）
+01-tcgen05-nvfp4-gemv	src/t4_mmq_canon.h	T1	e25ab9c4ace677c2	105	生产接线的布局单一来源（canonical ↔ GGML 记录映射）
+01-tcgen05-nvfp4-gemv	src/t4_mmq_pred.h	T1	a9e61924e088645c	129	接入判据（何时接管 NVFP4 MMQ）
+01-tcgen05-nvfp4-gemv	src/t4_mmq_ring.cuh	T1	b2ebbf6db4ee37f3	478	生产环内核（真实张量寻址、A 环、SF 段、epilogue）
+01-tcgen05-nvfp4-gemv	src/t4_prodaddr_check.cpp	T1	8b560050f920553f	25	与生产布局头的编译期同一性检查
+01-tcgen05-nvfp4-gemv	src/t4_prodaddr_layout.h	T1	ba54f3723c5ad671	40	生产寻址参数单一来源（可从 GGUF 头复核）
+01-tcgen05-nvfp4-gemv	src/t4_smem_layout.h	T1	7293875298435513	121	动态 smem 尺寸单一来源（宿主/内核共用，防事故）
+02-measurement-discipline	board/arm_gate.sh	T1	0b4f2e193e13b972	106	每臂前后闸门（pre/post）：洁净检查 + 残留进程/cmdline 取证
+02-measurement-discipline	board/rb2_mem_arm.sh	T1	d28325d01a218536	66	判别臂臂脚本（唯一变量从 expected.tsv 读，不硬编码 sha）
+02-measurement-discipline	board/rb2_mem_driver.sh	T1	144fdc23497f6f71	128	宿主编排：构建门→夹具→判据 replay→洁净→预算→上传→两臂→判决（含 BOARD_UNREACHABLE 早退）
+02-measurement-discipline	board/t4gate.sh	T1	3d4857339e0b5cfc	152	安灯/停线牌/启停预算/台账 sync（防"等 X 之后再看"把板子等死）
+02-measurement-discipline	host/analyze_ring_sweep.py	T1	034dffbd148b78c1	62	环几何扫描的统一口径换算（每步 ms / 段速率，逐位可复现）
+02-measurement-discipline	host/audit_ring_cfg.cu	T1	04501d896fb3eaad	67	上板前环几何审计（NCOLS/SMEM/occ 强制判定）
+02-measurement-discipline	host/check_aq_vs_archive.py	T1	62ae32c4c128e0bf	57	生产 A 量化器 ↔ 归档 canonical 的元素级（4bit 值）对账
+02-measurement-discipline	host/check_canonical_equiv.py	T1	bc4ae280b4d5bc0e	99	生产形态寻址 ↔ 定版件 canonical 流 逐位等价
+02-measurement-discipline	host/check_fixture_provenance.py	T1	3b413c1f57f93773	103	夹具来源审计：真工件/sha/只许改一行/未登记即 FAIL
+02-measurement-discipline	host/check_prodaddr_fill.py	T1	8c12aadb30872b11	102	宿主↔内核寻址恒等式（CPU 夹具，逐字节还原 canonical）
+02-measurement-discipline	host/check_ring_map.py	T1	66407574ded8f134	118	环内核全局寻址穷举核对（对齐/界内），防非对齐访存致死事故
+02-measurement-discipline	host/gguf_rowstride.py	T1	2cd5ede0e2cd71a0	108	从 GGUF 头直读真实行步长（参数不靠文档）
+02-measurement-discipline	host/leg_rate.py	T1	de1420b142672304	54	从 op_prof 账本重算腿速率（可逐位复现）
+02-measurement-discipline	host/rb1_metrics.py	T1	a090b683817a4b08	66	臂输出 → 判据可吃的 TSV（缺量即 NO_METRICS，不猜数）
+02-measurement-discipline	host/selftest.sh	T1	ac89d49e1cb81c96	243	夹具回归总入口：新判定/解析/换算先跑已知答案（上板前必跑）
+02-measurement-discipline	host/step_metrics.py	T1	63ad90c3a67ddec3	86	端到端口径：步耗 = 1000×mean_len/tps（t/s 是 acceptance 依赖量）
+02-measurement-discipline	host/verdict.py	T1	fbf4478c66e809a0	102	判据 DSL（KEY MIN/MAX/EQ）+ 夹具 replay 判别力预检 + cred 台账写入
+03-judgement-demo	fixtures/PROVENANCE.tsv	T1	d2b1e21c2db7ae8f	27	夹具来源登记（每个夹具从哪来、改了哪一列）
+03-judgement-demo	fixtures/rb1.spec	T1	2d7612a54ac6cfa1	7	判别臂判据 + 由真臂读数派生的夹具（好/坏/完整性负例）
+03-judgement-demo	fixtures/rb1_bad.out.metrics	T1	4240df7d5ff2655d	16	判别臂判据 + 由真臂读数派生的夹具（好/坏/完整性负例）
+03-judgement-demo	fixtures/rb1_good.out.metrics	T1	24bb4ba9dfb562d7	31	判别臂判据 + 由真臂读数派生的夹具（好/坏/完整性负例）
+03-judgement-demo	fixtures/rb2_mem_anchor.spec	T1	bc721ebb7e5cc4ee	8	判别臂判据 + 由真臂读数派生的夹具（好/坏/完整性负例）
+03-judgement-demo	fixtures/rb2_mem_h0.spec	T1	6c27789eaaa32f79	7	判别臂判据 + 由真臂读数派生的夹具（好/坏/完整性负例）
+03-judgement-demo	fixtures/rb2_mem_h1.spec	T1	77157a1f889d0bc4	8	判别臂判据 + 由真臂读数派生的夹具（好/坏/完整性负例）
+03-judgement-demo	fixtures/rb2_mem_integrity.spec	T1	d99128059e4b2a2d	6	判别臂判据 + 由真臂读数派生的夹具（好/坏/完整性负例）
+03-judgement-demo	fixtures/rb2_mem_prod_dm.metrics	T1	8663efccf60e3d5f	36	判别臂判据 + 由真臂读数派生的夹具（好/坏/完整性负例）
+03-judgement-demo	fixtures/rb2_mem_prod_high.metrics	T1	be3f526989292646	36	判别臂判据 + 由真臂读数派生的夹具（好/坏/完整性负例）
+03-judgement-demo	fixtures/rb2_mem_prod_low.metrics	T1	7c2765e6975eea3c	36	判别臂判据 + 由真臂读数派生的夹具（好/坏/完整性负例）
+03-judgement-demo	tests/selftest_rb2_arm.sh	T2	c5502b3445f1776b	72	臂脚本「静默放行洞」回归（门缺失/门崩溃时旧写法照样开臂）
+03-judgement-demo	tests/selftest_rb2_mem_arm.sh	T2	c8527e5c028baa77	88	判别臂接缝回归（沙盒 + 假宿主：门缺失/BLOCKED/sha 不符/变体缺失/模式接线/全链路）
+04-build-and-run	drivers/rb2_arm.sh	T2	032a93a0a9cc23f2	61	R-B2 臂执行（生产口径跑分）
+04-build-and-run	drivers/rb2_build.sh	T2	93833df22f20a94f	94	重建 T4 定版件（构建门：SASS/.text 同一性判据，含"改名换 sha"缺陷修复）
+04-build-and-run	drivers/rb2_driver.sh	T2	538077d074600d2d	119	R-B2 宿主编排总入口
+04-build-and-run	drivers/rb2_upload.sh	T2	5dcd5b53e015a8be	37	上传定版件到板端（缺件即 ABORT，不等到 No such file）
+04-build-and-run	drivers/upload_drivers.sh	T2	be6749b498d55957	16	驱动件上传（断电后板端 /tmp 清空 ⇒ 重传）
+04-build-and-run	v11/c58_v11_build.sh	T2	d5da7f485a6200ca	43	v11 构建脚本
+04-build-and-run	v11/c58_v11_host.cpp	T2	c7c4a463075423c1	319	v11 宿主驱动
+04-build-and-run	v11/check_copy_map.py	T2	b7dbf89f9eefb444	184	拷贝映射核对
+04-build-and-run	v11/verify_v11_d.py	T2	f93cf63ed60985eb	58	v11 输出 D 矩阵校验
