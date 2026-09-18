@@ -15,8 +15,9 @@
 | 项 | 规格 |
 |---|---|
 | 型号 | NVIDIA DRIVE Thor（p3960-0010 / Tegra264） |
-| 架构 | aarch64，12 核（Blackwell SM101a，CUDA Compute 10.1a） |
-| GPU | 集成 Blackwell 架构 GPU（Tegra 统一内存，无独立显存） |
+| 架构 | aarch64，ARM 12 核 CPU（无 SMT，6 个 cpufreq 域）+ 集成 Blackwell GPU（sm_101a，CUDA Compute 10.1a，Linux 域可见 14 SM）——CPU 与 GPU 是 Tegra264 SoC 内两个独立部分 |
+| CPU | 12 核 ARM【实测 /proc/cpuinfo: implementer 0x41(Arm) part 0xd83】，每核 1 线程，54 MHz–2.601 GHz，6 个独立 cpufreq policy（每 2 核一域）。具体核型 marketing 名称板上查不到（lscpu Model name 为空），外界资料称 Neoverse V3AE 系【推断，未在板上验证】 |
+| GPU | Blackwell 架构，**sm_101**（CC 10.1）【2026-09-16 CUDA Driver+Runtime 双 API 实测】；Linux 域可见 14 个 SM（板在 hypervisor 下，非物理总数），每 SM 1536 线程 / 228KiB 共享内存，L2 24MiB，显存总线 256bit@1.53GHz。⚠️ 与 Jetson AGX Thor（sm_110/20SM）不是同一颗，网上经验不可套用；编译 CUDA 代码必须 -arch=sm_101 |
 | 物理内存 | 58 GiB 可见（MemTotal 61524140 kB，另有 ~19G 固件 carveout 在 MemTotal 之外） |
 | GPU 统一内存池 | **42 GiB**（hugepages 21504×2MB，出厂 20G → 扩容 110%） |
 | 内核 | 6.1.119-rt45-prod-rt-tegra（PREEMPT_RT 实时内核） |

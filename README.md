@@ -24,7 +24,8 @@ DRIVE Thor 的民间本地 LLM 部署资料几乎为零：官方只提供 DriveO
 | 项目 | 规格 |
 |------|------|
 | SoC | NVIDIA Tegra264 (DRIVE Thor, Blackwell 架构) |
-| GPU | compute capability 10.1 (sm_101a), 14 SM @ 1530MHz, L2 24MiB |
+| CPU | ARM 12 核【实测 /proc/cpuinfo: implementer 0x41 part 0xd83】，无 SMT，6 个 cpufreq 域，54 MHz–2.6 GHz（核型 marketing 名称板上查不到，外界称 Neoverse V3AE 系【推断】） |
+| GPU | compute capability 10.1 (sm_101a), 14 SM @ 1530MHz, L2 24MiB（Linux 域可见数，板在 hypervisor 下）⚠️ 与 Jetson AGX Thor (sm_110/20SM) 不是同一颗 |
 | GPU 可见显存 | 20 GiB（统一内存分区，物理内存 58 GiB，差额为设备树级内核 carveout） |
 | 系统 | DriveOS 7.0.3, aarch64, CUDA 12.8 运行库齐全但无任何编译器 |
 

@@ -2,7 +2,7 @@
 
 > 用途：多组参数实验数据汇总，找 K 深度 / KV 类型 / 上下文长度的平衡点。
 > 口径铁律：本表所有数据必须同口径（冷 prompt 唯一 nonce / C1 / greedy temp0 / 输出 384）才可横向比较。
-> 板：p3960-0010 Jetson AGX Thor T5000，DriveOS 7.0.3，CUDA 12.8.90 驱动，60GB 统一内存
+> 板：p3960-0010 DRIVE Thor T5000（Tegra264，非 Jetson AGX Thor——sm_101/14SM 实测，与 Jetson sm_110/20SM 不是同一颗），DriveOS 7.0.3，CUDA 12.8.90 驱动，60GB 统一内存
 > 模型：QUASAR-NVFP4-text.gguf（19.65G，生产同款）+ Qwen3.8-27B-MTP-Q4_K_M.gguf（16.8G，09-09 起）+ williamliao Quality-v2（16.06G，NVFP4）
 
 ## 一、200K 冷 prompt 实验（prompt ≈195,686 tokens / 输出 384）

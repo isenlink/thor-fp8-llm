@@ -25,7 +25,8 @@ experiments, and the measured data — to save the next person the same groping.
 | Item | Spec |
 |------|------|
 | SoC | NVIDIA Tegra264 (DRIVE Thor, Blackwell) |
-| GPU | compute capability 10.1 (sm_101a), 14 SM @ 1530 MHz, L2 24 MiB |
+| CPU | ARM 12 cores [measured /proc/cpuinfo: implementer 0x41 part 0xd83], no SMT, 6 cpufreq domains, 54 MHz–2.6 GHz (marketing core name not exposed on-board; external sources say Neoverse V3AE class [inferred]) |
+| GPU | compute capability 10.1 (sm_101a), 14 SM @ 1530 MHz, L2 24 MiB (Linux-domain visible; board runs under a hypervisor) ⚠️ NOT the same chip as Jetson AGX Thor (sm_110/20SM) |
 | GPU-visible memory | 20 GiB (unified-memory partition; 58 GiB physical, the gap is device-tree kernel carveout) |
 | System | DriveOS 7.0.3, aarch64, full CUDA 12.8 runtime but **no compiler on board** |
 
