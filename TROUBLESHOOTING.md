@@ -44,6 +44,9 @@
 | 输出速度在创作类任务上远低于问答类 | [D5](#d5-创作任务加速失效) |
 | 长跑中 SSH 掉线、`ping` 不通（板端唯一网口） | [A9](#a9-usb-网卡板端唯一网口跑长任务时掉线) |
 | 基准跑到第 12 条左右 server 就 `Connection refused` | [D9](#d9-连续跑不同提示词server-在-12-条时被-oom-杀掉) |
+| `Failed to initialize agent: Model ... below the minimum 64,000` | [F1](#f1-failed-to-initialize-agent-model--has-a-context-window-of-16384-tokens-below-the-minimum-64000) |
+| Agent/服务首次请求静默数分钟、日志 `Stream stale for 180s` | [F2](#f2-agent-首次请求要等好几分钟日志-stream-stale-for-180s--no-chunks-received) |
+| `sudo ln -sf` 到只读路径"看似成功"、实际文件不存在 | [F3](#f3-sudo-ln--sf--usrlocalbinname-看起来成功实际什么都没发生) |
 | 深起草（n-max 4+）反而更慢 | [D6](#d6-深度扫描无门控时的甜点在-n2-n3不是越深越好) |
 | 日志报 `exceeds the trained block size … clamping to` | [D7](#d7-请求深度超过-draft-头训练块大小被-clamp) |
 | 加载日志一堆 `unused tensor … nextn … ignoring` | [D8](#d8-dflash-模式下主模型报一堆-unused-tensor--nextn--ignoring) |
@@ -693,6 +696,61 @@ UUID=<uuid> /media/ssd_repo ext4 defaults,nofail 0 2
 
 ---
 
+---
+
+## F. Agent 部署 / 服务化类
+
+> 完整方法见 [docs/07-hermes-agent/](docs/07-hermes-agent/)：部署总览 / 两条安装路径对照 /
+> 持久化与自启双挂点 / 不等真断电的等价验收 / 硬约束与反例。
+
+### F1. `Failed to initialize agent: Model ... has a context window of 16384 tokens, below the minimum 64000`
+
+**症状**：模型端点本身可用（直接调 API 正常），但 Agent 拒绝初始化。
+
+**根因**：Agent 侧有**最小上下文窗口 ≥64K** 的硬门槛；本地服务按实验习惯开成 `-c 16384`/`32768` 就会被拒。
+
+**解法**：把本地模型上下文开到 ≥64K。本平台实测 `-c 262144` 完全可行——KV 只有 **64 KB/token**
+（65 层里仅 16 层全注意力）⇒ 256K f16 KV = 16.8 GB，加权重与草稿共 **35 GB < 46 GB 大页池**。
+
+**注意**：上下文上限**设大不会拖慢短输入**（解码只看实际 KV 长度），不要为"省"而开小。
+
+### F2. Agent 首次请求要等好几分钟：`Stream stale for 180s (threshold 180s) — no chunks received`
+
+**症状**：一次问答耗时 **3 分 11 秒**（实测），重试后 1 秒成功；另一台同型板表现为 **6/6 域名全部无应答**。
+极易被误判成"模型慢"或"外网慢"。
+
+**根因**：**板端域名解析挂死**。出厂 `/etc/resolv.conf` 指向**平台预置的遗留解析器地址**，
+该地址落在**车载网口的路由**上；只要默认路由指向实验室网卡而不指向车载内网，它就永远不可用。
+Agent 的首个请求卡在解析阶段，直到静默超时被判定 stale。
+
+**判据（三步取证，缺一不可）**：
+1. **裸 API 延迟**（绕开 Agent，直接打一次 `/chat/completions`）——分清"模型慢"还是"链路慢"；
+2. **按 IP 直连**（排除 DNS）——能连上说明出网正常，问题在解析；
+3. **逐解析器探测**——实测网关与公共解析器都有应答，**只有那个遗留地址全超时** ⇒ 命中本问题。
+
+**解法**：解析器**跟随默认路由**（网关 + 一个公共解析器），并加 `options timeout:2 attempts:2`；
+母本放持久分区，**由恢复脚本在 overlay 被吞后写回**。
+**反例**：不要长期靠 `/etc/hosts` 手工条目录绕过（只覆盖已知域名，新域名仍挂死，还掩盖真实故障）。
+
+**效果**：同一台板，修 DNS 前 3 min 11 s → 修后 **2–3 s**（裸 API 0.43–0.81 s）。
+
+### F3. `sudo ln -sf ... /usr/local/bin/<name>` 看起来成功，实际什么都没发生
+
+**症状**：脚本无报错，但登录 shell 里命令找不到。若命令尾部带 `|| true`，失败会被**静默吞掉**。
+
+**实测**：
+```bash
+$ touch /usr/local/bin/.wtest         # Read-only file system
+$ sudo touch /usr/local/bin/.wtest2   # Read-only file system   <- 加 sudo 一样
+```
+
+**解法**：环境变量走 `/etc/profile.d/99-<name>.sh`（overlay 可写、由恢复脚本重建），
+可执行 wrapper 放持久分区。
+**更普遍的教训**：恢复/安装脚本里的每一步都必须在**复验段可见**——不要用 `|| true` 掩盖
+"本该成功的动作"，否则交付时看起来全绿、实际什么都没装。
+
+---
+
 ## 📌 方法论总结（比单个坑更值钱的部分）
 
 1. **报错字面矛盾 = ABI 问题**。"expected X (got X)" 这种自我矛盾报错，
@@ -718,6 +776,7 @@ UUID=<uuid> /media/ssd_repo ext4 defaults,nofail 0 2
 - [docs/04-nvfp4-optimization/](docs/04-nvfp4-optimization/) — NVFP4 调优实录
 - [docs/05-system-tuning/](docs/05-system-tuning/) — 系统调优
 - [docs/06-benchmarks/](docs/06-benchmarks/) — 基准与社区对照
+- [docs/07-hermes-agent/](docs/07-hermes-agent/) — 在板上部署 Agent（持久化 / 自启 / 硬约束）
 
 ---
 

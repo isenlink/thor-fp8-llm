@@ -1,0 +1,36 @@
+[Unit]
+Description=llama.cpp server — Qwen3.8-27B NVFP4 + DFlash2 draft (models on /brand_data)
+After=local-fs.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=user
+Group=user
+# CUDA/库路径与手工验证过的一致（见 board3-bench/serve.sh）
+Environment=GGML_CUDA_TCGEN05=1
+Environment=LD_LIBRARY_PATH=/brand_data/llama-bin/llama.cpp-tcgen05/lib:/usr/local/cuda-12.8/targets/aarch64-linux/lib:/usr/local/cuda-12.8/thor/targets/aarch64-linux/lib
+Environment=HOME=/brand_data/hermes/home
+WorkingDirectory=/brand_data/llama-bin
+ExecStart=/brand_data/llama-bin/llama.cpp-tcgen05/bin/llama-server \
+  -m /brand_data/models/Qwen3.8-27B-NVFP4-MTP-HIGH.gguf \
+  -md /brand_data/models/Qwen3.8-27B-DFlash2-Q2_K_S-MIX.gguf \
+  --spec-type draft-dflash -ngld 99 --spec-draft-n-max 5 \
+  -ngl 99 -c 262144 -np 1 --parallel 1 \
+  -fa on -ctk f16 -ctv f16 \
+  --cache-ram 512 \
+  --alias qwen3.8-27b \
+  --host 127.0.0.1 --port 8080 \
+  --temp 0 --seed 1234 --jinja
+# 说明：-c 262144 是模型原生上限。实测依据（见 thor-fp8-llm docs/05-system-tuning/kv-budget-and-256k）：
+#   KV 仅 64KB/token（65 层里只有 16 层全注意力）⇒ 256K f16 KV = 16.8GB，
+#   权重 17.6G + 草稿 0.56G + KV 16.8G = 35.0G < 46G 大页池；且 ctx 上限设大不拖慢短输入。
+#   Hermes 自身要求上下文窗口 ≥64K，16K 会被拒绝启动。
+Restart=always
+RestartSec=20
+TimeoutStopSec=30
+StandardOutput=append:/brand_data/hermes/logs/llama-server.log
+StandardError=append:/brand_data/hermes/logs/llama-server.log
+
+[Install]
+WantedBy=multi-user.target

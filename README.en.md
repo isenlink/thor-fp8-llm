@@ -95,6 +95,11 @@ This took the 128K production target from **16.88 → 19.61 tok/s**, while the
    consumer RTX 50 series (sm_120) *cannot*. This is why the community calls it
    "Blackwell-specific." See [docs/04-nvfp4-optimization/tcgen05-research.md](docs/04-nvfp4-optimization/tcgen05-research.md).
 
+5. **A dirty power loss wipes the overlay** — `/etc`, `/home`, `/media` roll back to the vendor image
+   after an unclean shutdown (fsck formats the overlay upper layer). Anything that must survive goes on
+   the board's data partition, and auto-start has to be triggered from an always-on outside host over
+   serial. See [docs/07-hermes-agent/](docs/07-hermes-agent/).
+
 ## Status
 
 🚧 Content is being organized (source docs are being sanitized and restructured).
