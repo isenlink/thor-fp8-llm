@@ -55,7 +55,7 @@ docs/
   02-cross-compile/       x86 主机交叉编译 aarch64 + sm_101a 全套工具链
   03-model-conversion/    FP8 → GGUF 转换三层障碍（架构名分发/分片命名/numpy ABI）+ 模型文件台账
   04-nvfp4-optimization/  NVFP4 量化路线实验记录（含失败实验 MTP K7、B3 kernel 级优化决策链、microbench 拆解、正确性事故修复链、定案成绩、后续否决路线与 GPU 死锁事故纪律、多板并行测试准备、**投机草稿配方（深度甜点/混合量化/内容类型依赖）**、**DFlash2 结论撤销**）
-  05-system-tuning/       GPU 大页池扩容与固化（**含"只能扩不能缩"的反证**）、overlay 持久化方法论、断电自愈架构、温度管理、**KV 预算与 256K 实测**、**运行期内存增长调查（已定案：prompt cache 上限 > 可用内存）**
+  05-system-tuning/       GPU 大页池扩容与固化（**含"只能扩不能缩"的反证**）、overlay 持久化方法论、断电自愈架构、温度管理、**KV 预算与 256K 实测**、**运行期内存增长调查（已定案：prompt cache 上限 > 可用内存）**、**llama-server 部署配置速查（Q4_K_M MoE 实例）**、**MTP 投机解码启用（Qwen3.5-MoE 实测）**
   06-benchmarks/          各阶段基准数据与复现命令（含 200K 基准台账）、**基准方法论（三个口径陷阱 + 配对设计）**
 scripts/                  板端/主机实用脚本（串口探测、GPU 池检查、B3 kernel microbench 全家桶）
   tcgen05-nvfp4-gemv/     **代码级整理包**：sm_101a 上 tcgen05 NVFP4 GEMV 快路内核（−49 ms/步）+ 四道机械测量纪律工具（安灯/臂闸门/数据可信度/启停预算）+ 无需板卡即可跑的判据 demo
