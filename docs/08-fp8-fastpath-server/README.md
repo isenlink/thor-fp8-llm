@@ -5,13 +5,16 @@
 
 ## 网盘下载（预编译二进制）
 
+**百度网盘**（包名 `thor-prebuilt-2026-09-19`）：
+🔗 https://pan.baidu.com/s/16CNsjD3J2psvBo57oJZ2ZQ?pwd=d8bc （提取码 `d8bc`）
+
+下载后请务必用下表 sha256 校验（防止传输损坏或版本不符）：
+
 | 文件 | 大小 | sha256 |
 |---|---|---|
 | `llama-server-aarch64-sm101a-nvfp4` | 74.7 MiB | `a7feb90f5d8dd95feb09a8da42e8e1d1fd5126b341a54a80ecaea322a25e40a1` |
 | `b3-correctness`（NVFP4 数值自检工具） | 59.7 MiB | `712cb1bcb3c9be2a478f4bb699c898d11463ea541b41ae592fb253e286f6296d` |
 | `b3-correctness2`（同上，第二版） | 59.7 MiB | `fa46218bbefb004dd08736533b752cdf18c1acbb3229896237d84705b31e19ad` |
-
-> 🔗 **百度网盘链接：待补**（发布时填入）
 
 ## 目录结构
 
