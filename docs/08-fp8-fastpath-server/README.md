@@ -1,5 +1,8 @@
-# 08 · 预编译服务端（sm_101a · NVFP4）— 源码补丁与部署文档
+# 08 · FP8 权重侧快路服务端（sm_101a · NVFP4）— 源码补丁与部署文档
 
+> **命名说明**：本目录是 **FP8 权重侧快路 + MMQ 路线**（非 tcgen05 内核路线）。
+> 更快的自研 T4 tcgen05 实验件**不公开**（精度未定论，仅内部记录），见仓库 tcgen05 分支的说明。
+>
 > 本目录内容来自 2026-09-19 的对外整理包（含完整补丁集 + 构建配方 + 启动脚本 + 实测读数）。
 > **预编译二进制不在本仓库**（体积原因），通过网盘分发，链接见下。
 
@@ -69,4 +72,4 @@ bash prebuilt-docs/02-launcher/start-server.sh
 - 投机草稿配方（MTP/DFlash2 深度甜点）→ [docs/04-nvfp4-optimization/speculative-drafting-recipes-2026-09-16.md](../04-nvfp4-optimization/speculative-drafting-recipes-2026-09-16.md)
 - KV 预算 / 256K 长上下文 → [docs/05-system-tuning/](../05-system-tuning/)
 - 基准方法论（口径陷阱）→ [docs/06-benchmarks/benchmark-methodology-2026-09-16.md](../06-benchmarks/benchmark-methodology-2026-09-16.md)
-- tcgen05 内核（更快的实验线，代码级整理包）→ [scripts/tcgen05-nvfp4-gemv/](../../scripts/tcgen05-nvfp4-gemv/)；该内核线的完整源码与构建材料在 `tcgen05` 分支（整理中）
+- tcgen05 内核（更快的实验线）→ 代码级整理包见 [scripts/tcgen05-nvfp4-gemv/](../../scripts/tcgen05-nvfp4-gemv/)；**自研 T4 tcgen05 实验件只记录不公开**（精度未定论），完整记录在仓库 `tcgen05` 分支
