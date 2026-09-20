@@ -1,0 +1,27 @@
+diff --git a/gguf-py/gguf/quants.py b/gguf-py/gguf/quants.py
+index 80966b6..ecf0bde 100644
+--- a/gguf-py/gguf/quants.py
++++ b/gguf-py/gguf/quants.py
+@@ -54,11 +54,22 @@ class QuantError(Exception): ...
+ _type_traits: dict[GGMLQuantizationType, type[__Quant]] = {}
+ 
+ 
++def _quantize_f8_e4m3(data: np.ndarray) -> np.ndarray:
++    # Thor patch: encode float to FP8 E4M3 bytes.
++    # uint8 input is ALREADY raw FP8 bytes (torch fp8 → numpy view) — pass through untouched.
++    if data.dtype == np.uint8:
++        return data
++    import ml_dtypes
++    return data.astype(ml_dtypes.float8_e4m3fn).view(np.uint8)
++
++
+ def quantize(data: np.ndarray, qtype: GGMLQuantizationType) -> np.ndarray:
+     if qtype == GGMLQuantizationType.F32:
+         return data.astype(np.float32, copy=False)
+     elif qtype == GGMLQuantizationType.F16:
+         return data.astype(np.float16, copy=False)
++    elif qtype == GGMLQuantizationType.F8_E4M3:
++        return _quantize_f8_e4m3(data)
+     elif (q := _type_traits.get(qtype)) is not None:
+         return q.quantize(data)
+     else:

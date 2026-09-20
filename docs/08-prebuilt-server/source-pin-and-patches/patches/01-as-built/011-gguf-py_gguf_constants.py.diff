@@ -1,0 +1,22 @@
+diff --git a/gguf-py/gguf/constants.py b/gguf-py/gguf/constants.py
+index d3a639f..2938624 100644
+--- a/gguf-py/gguf/constants.py
++++ b/gguf-py/gguf/constants.py
+@@ -5669,6 +5669,7 @@ class GGMLQuantizationType(IntEnum):
+     NVFP4   = 40
+     Q1_0    = 41
+     Q2_0    = 42
++    F8_E4M3 = 43
+ 
+ 
+ class ExpertGatingFuncType(IntEnum):
+@@ -5827,7 +5828,9 @@ class VisionProjectorType:
+ # Items here are (block size, type size)
+ QK_K = 256
+ GGML_QUANT_SIZES: dict[GGMLQuantizationType, tuple[int, int]] = {
++    GGMLQuantizationType.F8_E4M3: (32, 32),
+     GGMLQuantizationType.F32:     (1, 4),
++
+     GGMLQuantizationType.F16:     (1, 2),
+     GGMLQuantizationType.Q4_0:    (32, 2 + 16),
+     GGMLQuantizationType.Q4_1:    (32, 2 + 2 + 16),

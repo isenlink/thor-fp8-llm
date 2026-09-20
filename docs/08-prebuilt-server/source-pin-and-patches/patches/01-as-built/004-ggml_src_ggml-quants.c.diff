@@ -1,0 +1,66 @@
+diff --git a/ggml/src/ggml-quants.c b/ggml/src/ggml-quants.c
+index 1ebc50a..34dd14a 100644
+--- a/ggml/src/ggml-quants.c
++++ b/ggml/src/ggml-quants.c
+@@ -5665,3 +5665,61 @@ bool ggml_validate_row_data(enum ggml_type type, const void * data, size_t nbyte
+ 
+     return true;
+ }
++
++//================================== F8_E4M3 (Thor FP8 native prep)
++
++void quantize_row_f8_e4m3_ref(const float * GGML_RESTRICT x, block_f8_e4m3 * GGML_RESTRICT y, int64_t k) {
++    assert(k % QK_F8_E4M3 == 0);
++    const int64_t nb = k / QK_F8_E4M3;
++    for (int64_t i = 0; i < nb; i++) {
++        for (int j = 0; j < QK_F8_E4M3; j++) {
++            // round-to-nearest via __nv_fp8 semantics emulated on CPU (from_float)
++            float v = x[i*QK_F8_E4M3 + j];
++            uint8_t e = 0;
++            float av = fabsf(v);
++            if (av > 0.0f) {
++                int sign = v < 0.0f ? 0x80 : 0x00;
++                if (av > 448.0f) av = 448.0f;
++                int exp = (int) floorf(log2f(av)) + 7;
++                if (exp < 1) { // subnormal
++                    e = sign | (uint8_t) roundf(av * 512.0f);
++                } else {
++                    float man = av / ldexpf(1.0f, exp - 7) - 1.0f;
++                    int m = (int) roundf(man * 8.0f);
++                    if (m >= 8) { m = 0; exp++; }
++                    if (exp > 15) { exp = 15; m = 7; }
++                    e = sign | (uint8_t)((exp << 3) | m);
++                }
++            }
++            y[i].qs[j] = e;
++        }
++    }
++}
++
++void dequantize_row_f8_e4m3(const block_f8_e4m3 * GGML_RESTRICT x, float * GGML_RESTRICT y, int64_t k) {
++    assert(k % QK_F8_E4M3 == 0);
++    const int64_t nb = k / QK_F8_E4M3;
++    for (int64_t i = 0; i < nb; i++) {
++        for (int j = 0; j < QK_F8_E4M3; j++) {
++            const uint8_t b = x[i].qs[j];
++            const int sign = (b >> 7) & 1;
++            const int exp  = (b >> 3) & 0xF;
++            const int man  = b & 0x7;
++            float r;
++            if (exp == 0) {
++                r = man * 0.001953125f;
++            } else {
++                r = (1.0f + man * 0.125f) * ldexpf(1.0f, exp - 7);
++            }
++            y[i*QK_F8_E4M3 + j] = sign ? -r : r;
++        }
++    }
++}
++
++size_t quantize_f8_e4m3(const float * GGML_RESTRICT src, void * GGML_RESTRICT dst, int64_t nrow, int64_t n_per_row, const float * GGML_RESTRICT quant_weights) {
++    (void) quant_weights;
++    assert(n_per_row % QK_F8_E4M3 == 0);
++    quantize_row_f8_e4m3_ref(src, (block_f8_e4m3 *) dst, (int64_t) nrow * n_per_row);
++    return nrow * n_per_row / QK_F8_E4M3 * sizeof(block_f8_e4m3);
++}
++

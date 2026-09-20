@@ -1,0 +1,30 @@
+# file	bytes	sha256_16	说明
+README.md	5078	07fdd44d0a5f1a02	总说明
+SOURCE-PIN.md	2909	1d33aea9285114a8	上游 pin 与我们的改动清单
+BUILD.md	3530	2f488cf06fc348e8	构建配方与验收
+UPSTREAM-LINKS.md	2126	bab53cf33c578574	官方件名字与链接
+patches/POST-BUILD-DRIFT.tsv	1707	377ffc0e847655bd	构建后改动（不随包发布）
+patches/PATCH-FIDELITY.tsv	2613	724e55da61e39680	保真度反查表（二进制里有没有这些标记）
+patches/apply.sh	1905	183cb8d78dbc5047	补丁应用（支持 --check）
+patches/01-as-built/001-ggml_include_ggml.h.diff	467	408a6442837bab71	补丁/新增源文件
+patches/01-as-built/002-ggml_src_ggml-common.h.diff	622	785e2f4ff391a052	补丁/新增源文件
+patches/01-as-built/003-ggml_src_ggml.c.diff	889	715e6ffd9304f7c7	补丁/新增源文件
+patches/01-as-built/004-ggml_src_ggml-quants.c.diff	2604	88ad26c976668fbc	补丁/新增源文件
+patches/01-as-built/005-ggml_src_ggml-quants.h.diff	674	6e77f3ef0a5c8c7f	补丁/新增源文件
+patches/01-as-built/006-ggml_src_ggml-cuda_convert.cu.diff	1594	19381123094e87ce	补丁/新增源文件
+patches/01-as-built/007-ggml_src_ggml-cuda_dequantize.cuh.diff	1487	3bd80dedafa78604	补丁/新增源文件
+patches/01-as-built/008-ggml_src_ggml-cuda_vecdotq.cuh.diff	1906	af69f651a6b847f3	补丁/新增源文件
+patches/01-as-built/009-conversion_base.py.diff	4351	e612591b1a355f3c	补丁/新增源文件
+patches/01-as-built/010-convert_hf_to_gguf.py.diff	1066	17009ccd43fcb18d	补丁/新增源文件
+patches/01-as-built/011-gguf-py_gguf_constants.py.diff	739	844d9dd74da0ea4c	补丁/新增源文件
+patches/01-as-built/012-gguf-py_gguf_quants.py.diff	1072	a75bacad12fc7a8f	补丁/新增源文件
+patches/01-as-built/new-files/ggml/src/ggml-cuda/fp8-cublaslt.cu	13895	250f88710b089cff	补丁/新增源文件
+patches/01-as-built/new-files/ggml/src/ggml-cuda/fp8-mma.cuh	3472	fa044c3912fff869	补丁/新增源文件
+patches/01-as-built/new-files/ggml/src/ggml-cuda/fp8-mmq-production.cu	6951	cf879f1aeb2e4fa5	补丁/新增源文件
+patches/01-as-built/new-files/ggml/src/ggml-cuda/fp8-mmq.cu	4405	052d1c09508c0a12	补丁/新增源文件
+patches/02-in-binary-post-modified/012-ggml_src_ggml-cuda_ggml-cuda.cu.diff	9422	4cd429b41e1a8014	补丁/新增源文件
+patches/02-in-binary-post-modified/016-ggml_src_ggml-cuda_mmvq.cuh.diff	1397	9a1e6578854fb883	补丁/新增源文件
+toolchain/build-thor-cuda128.sh	734	8ce6164a83af5dc0	工具链
+toolchain/nvcc-xc128.sh	723	bad3a4c7f294f41e	工具链
+toolchain/toolchain-thor-cuda128.cmake	1836	1f9185f4943ffb25	工具链
+toolchain/verify.sh	1471	eb6a14ec4945e09d	工具链

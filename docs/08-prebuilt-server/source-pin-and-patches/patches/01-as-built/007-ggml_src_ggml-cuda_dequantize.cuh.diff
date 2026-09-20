@@ -1,0 +1,37 @@
+diff --git a/ggml/src/ggml-cuda/dequantize.cuh b/ggml/src/ggml-cuda/dequantize.cuh
+index 651524b..ec90944 100644
+--- a/ggml/src/ggml-cuda/dequantize.cuh
++++ b/ggml/src/ggml-cuda/dequantize.cuh
+@@ -119,6 +119,32 @@ static __device__ __forceinline__ void dequantize_q8_0(const void * vx, const in
+     v.y *= d;
+ }
+ 
++
++//================================== FP8 E4M3
++
++static __device__ __forceinline__ float ggml_cuda_e4m3_to_fp32(uint8_t x) {
++    // standard SIGNED E4M3 (IEEE-style, OCP FP8): sign(1) exp(4) man(3)
++    // NOTE: distinct from ggml_cuda_ue4m3_to_fp32 which is the UNSIGNED+halved
++    // NVFP4 sub-block-scale format and must NOT be used for F8_E4M3 weights.
++    const int sign = (x >> 7) & 1;
++    const int exp  = (x >> 3) & 0xF;
++    const int man  = x & 0x7;
++    float raw;
++    if (exp == 0) {
++        raw = ldexpf((float) man, -9);          // subnormal: man * 2^-9
++    } else {
++        raw = ldexpf(1.0f + (float) man / 8.0f, exp - 7);
++    }
++    return sign ? -raw : raw;
++}
++
++static __device__ __forceinline__ void dequantize_f8_e4m3(const void * vx, const int64_t ib, const int iqs, float2 & v) {
++    const block_f8_e4m3 * x = (const block_f8_e4m3 *) vx;
++    // FP8 E4M3: each byte is one element, no scale factor
++    v.x = ggml_cuda_e4m3_to_fp32(x[ib].qs[iqs + 0]);
++    v.y = ggml_cuda_e4m3_to_fp32(x[ib].qs[iqs + 1]);
++}
++
+ //================================== k-quants
+ 
+ // Each call dequantizes one super-block of QK_K values into y using the

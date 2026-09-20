@@ -1,0 +1,35 @@
+diff --git a/ggml/src/ggml-cuda/mmvq.cuh b/ggml/src/ggml-cuda/mmvq.cuh
+index 5605bf7..0b9ded3 100644
+--- a/ggml/src/ggml-cuda/mmvq.cuh
++++ b/ggml/src/ggml-cuda/mmvq.cuh
+@@ -1,9 +1,29 @@
+ #include "common.cuh"
+ 
+-#define MMVQ_MAX_BATCH_SIZE 8 // Max. batch size for which to use MMVQ kernels.
++// Patched for Thor (sm_101a) MTP verify batches: default 8 pushes the 8-wide
++// (K7+1) verify batch onto the slow CUDA-core MMVQ path. Env-overridable.
++// GGML_MMVQ_MAX=<n>: max batch size for MMVQ kernels (default 8; hanxiao's
++// L4 data suggests 2 forces verify onto tensor-core MMQ, +16% decode).
++#ifndef MMVQ_MAX_BATCH_SIZE
++#define MMVQ_MAX_BATCH_SIZE 8
++#endif
++
++static inline int mmvq_max_batch_size() {
++    static int cached = -1;
++    if (cached < 0) {
++        int v = MMVQ_MAX_BATCH_SIZE;
++        const char * env = getenv("GGML_MMVQ_MAX");
++        if (env && atoi(env) > 0) v = atoi(env);
++        cached = v;
++    }
++    return cached;
++}
+ 
+ bool ggml_cuda_should_use_mmvq(enum ggml_type type, int cc, int64_t ne11);
+ 
++// [B4] max batch size for the NVFP4 wide-M verify kernel (env GGML_NVFP4_WIDE_MAX, default 16; 2 disables)
++int ggml_cuda_nvfp4_wide_max_batch();
++
+ // Returns the maximum batch size for which MMVQ should be used for MUL_MAT_ID,
+ // based on the quantization type and GPU architecture (compute capability).
+ int get_mmvq_mmid_max_batch(ggml_type type, int cc);

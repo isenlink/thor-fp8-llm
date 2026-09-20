@@ -1,0 +1,11 @@
+# 列: file | bytes | sha256_16 | 说明
+README.md	17455	711ca6dba97b6919	包说明（目标/读数/启动/排障/精度自检）
+01-binary/llama-server-aarch64-sm101a-nvfp4	78278560	a7feb90f5d8dd95f	预编译服务端（ELF64 aarch64, 内含 sm_101a cubin, 含 DFlash2 起草器支持）
+01-binary/SHA256SUMS.txt	100	54756ae9597d8e44	校验和
+02-launcher/start-server.sh	2722	cc3740eb4163ba3d	启动/停服/主机准备脚本
+02-launcher/stop-server.sh	592	31f917b7518ee96f	启动/停服/主机准备脚本
+02-launcher/prepare-host.sh	1100	6c45931defe832b0	启动/停服/主机准备脚本
+03-reference/prod-measurements.md	2569	35366ca2b8c53c1e	参考文档
+03-reference/troubleshoot-9tps.md	3200	9a807a536e470d07	参考文档
+03-reference/negative-results.md	1715	b9e3b3e6da162266	参考文档
+03-reference/accuracy-selfcheck.md	3562	27a457f6ca7d7f51	参考文档

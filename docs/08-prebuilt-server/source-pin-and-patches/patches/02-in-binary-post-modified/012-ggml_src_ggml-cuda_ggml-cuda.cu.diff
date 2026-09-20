@@ -1,0 +1,167 @@
+diff --git a/ggml/src/ggml-cuda/ggml-cuda.cu b/ggml/src/ggml-cuda/ggml-cuda.cu
+index 5ae3b8d..905ed77 100644
+--- a/ggml/src/ggml-cuda/ggml-cuda.cu
++++ b/ggml/src/ggml-cuda/ggml-cuda.cu
+@@ -1619,6 +1619,89 @@ static void ggml_cuda_mul_mat_cublas_impl(ggml_backend_cuda_context & ctx, const
+     }
+ }
+ 
++// [Thor FP8] cuBLASLt FP8 path for F8_E4M3 weights (see fp8-cublaslt.cu)
++void ggml_cuda_mul_mat_f8_e4m3(ggml_backend_cuda_context & ctx, const ggml_tensor * src0, const ggml_tensor * src1, ggml_tensor * dst);
++
++// [Thor op-prof] graph-level async op timing (zero-sync: record only, resolve at dump)
++// Env GGML_OP_PROF=1. Buckets by op name + tensor-name keyword refinement.
++// Dump: /brand_data/ai_workspace/bench/op_prof.txt every 2000 timed ops.
++#include <unordered_map>
++struct op_prof_ent { uint64_t n = 0; double ms = 0; double flops = 0; };
++static std::unordered_map<std::string, op_prof_ent> g_op_prof;
++static uint64_t g_op_prof_count = 0;
++static bool g_op_prof_on = getenv("GGML_OP_PROF") != nullptr;
++static double g_op_prof_flops_pending = 0.0;
++static cudaEvent_t g_op_ev_a = nullptr, g_op_ev_b = nullptr;
++static bool g_op_last_capture_skipped = false;
++static void op_prof_dump() {
++    FILE * f = fopen("/brand_data/ai_workspace/bench/op_prof.txt", "w");
++    if (!f) return;
++    double total = 0;
++    for (auto & kv : g_op_prof) total += kv.second.ms;
++    fprintf(f, "op profile (n=%llu, total=%.1f ms)\n", (unsigned long long)g_op_prof_count, total);
++    fprintf(f, "%-40s %10s %12s %8s %8s %10s\n", "bucket", "calls", "total_ms", "avg_us", "pct", "TFLOP/s");
++    std::vector<std::pair<std::string, op_prof_ent>> v(g_op_prof.begin(), g_op_prof.end());
++    std::sort(v.begin(), v.end(), [](auto & a, auto & b){ return a.second.ms > b.second.ms; });
++    for (auto & kv : v) {
++        double tflops = kv.second.ms > 0 ? kv.second.flops / (kv.second.ms * 1e-3) / 1e12 : 0.0;
++        fprintf(f, "%-40s %10llu %12.3f %8.1f %7.1f%% %10.2f\n", kv.first.c_str(),
++                (unsigned long long)kv.second.n, kv.second.ms,
++                kv.second.n ? kv.second.ms*1000.0/kv.second.n : 0.0,
++                total > 0 ? kv.second.ms*100.0/total : 0.0, tflops);
++    }
++    fclose(f);
++}
++static void ggml_cuda_op_prof_begin(cudaStream_t st) {
++    if (!g_op_prof_on) return;
++    cudaStreamCaptureStatus cap = cudaStreamCaptureStatusNone;
++    cudaStreamIsCapturing(st, &cap);
++    if (cap != cudaStreamCaptureStatusNone) return;  // no event ops inside capture
++    if (!g_op_ev_a) { cudaEventCreate(&g_op_ev_a); cudaEventCreate(&g_op_ev_b); }
++    g_op_last_capture_skipped = (cap != cudaStreamCaptureStatusNone);
++    cudaEventRecord(g_op_ev_a, st);
++}
++static void ggml_cuda_op_prof_end(cudaStream_t st, const ggml_tensor * node) {
++    if (!g_op_prof_on) return;
++    cudaStreamCaptureStatus cap = cudaStreamCaptureStatusNone;
++    cudaStreamIsCapturing(st, &cap);
++    if (cap != cudaStreamCaptureStatusNone) return;
++    cudaEventRecord(g_op_ev_b, st);
++    cudaEventSynchronize(g_op_ev_b);
++    float ms = 0; cudaEventElapsedTime(&ms, g_op_ev_a, g_op_ev_b);
++    const char * opn = ggml_op_name(node->op);
++    const char * tn = node->name && node->name[0] ? node->name : opn;
++    std::string key = opn;
++    // refine by tensor name keyword — Thor 审计版：lm_head / GDN / attention / ffn 分离
++    std::string n(tn);
++    if (n.find("output") != std::string::npos || n == "MUL_MAT") {
++        // llama.cpp 里 lm_head 的节点名通常是 "result-output" 或含 output
++    }
++    for (auto & kw : {std::string("output"), std::string("result"), std::string("ffn"), std::string("ssm"),
++                      std::string("gdn"), std::string("attn"), std::string("qkv"), std::string("out_proj"),
++                      std::string("alpha"), std::string("beta"), std::string("conv")}) {
++        if (n.find(kw) != std::string::npos) { key += ":" + kw; break; }
++    }
++    if (strstr(opn, "MUL_MAT") && node->src[0]) {
++        if (node->src[0]->type == GGML_TYPE_F8_E4M3) key += ":F8";
++        else if (node->src[0]->type == GGML_TYPE_NVFP4) key += ":NVFP4";
++        else if (node->src[0]->type == GGML_TYPE_BF16 || node->src[0]->type == GGML_TYPE_F16) key += ":BF16";
++        // N 维度（权重输出维）：区分瘦 GEMM（N=48 门控）vs 宽 GEMM（N=5120/10240/17408）
++        int64_t N = node->src[0]->ne[1];
++        if (N > 100000) key += ":HUGE-N";
++        else key += ":N" + std::to_string(N);
++        // FLOPs = 2 * N * K * M（A=[N,K] 权重, B=[K,M] 激活）
++        if (node->src[1]) {
++            int64_t K = node->src[0]->ne[0];
++            int64_t M = node->src[1]->ne[1];
++            g_op_prof_flops_pending = 2.0 * (double)N * (double)K * (double)M;
++        }
++    }
++    auto & e = g_op_prof[key];
++    e.n += 1; e.ms += ms; e.flops += g_op_prof_flops_pending;
++    g_op_prof_flops_pending = 0.0;
++    if ((++g_op_prof_count) % 20000 == 0) { op_prof_dump(); g_op_prof.clear(); }
++}
++
+ static void ggml_cuda_mul_mat_cublas(ggml_backend_cuda_context & ctx, const ggml_tensor * src0, const ggml_tensor * src1, ggml_tensor * dst) {
+     ggml_type compute_type = src0->type;
+     if (ggml_is_quantized(compute_type)) {
+@@ -1792,8 +1875,8 @@ static bool ggml_cuda_should_fuse_mul_mat_vec_q(const ggml_tensor * tensor) {
+                                    ggml_nbytes(src0) != ggml_backend_buffer_get_alloc_size(src0->buffer, src0) &&
+                                    src0->view_src;
+ 
+-    bool use_mul_mat_vec_q = ggml_is_quantized(src0->type) && !bad_padding_clear && src1->type == GGML_TYPE_F32 &&
+-                             dst->type == GGML_TYPE_F32 && src1->ne[1] <= MMVQ_MAX_BATCH_SIZE;
++    bool use_mul_mat_vec_q = ggml_is_quantized(src0->type) && src0->type != GGML_TYPE_F8_E4M3 && !bad_padding_clear && src1->type == GGML_TYPE_F32 &&
++                             dst->type == GGML_TYPE_F32 && src1->ne[1] <= mmvq_max_batch_size();
+ 
+     // fusion is not universally faster on Pascal
+     const int cc = ggml_cuda_info().devices[ggml_cuda_get_device()].cc;
+@@ -1857,7 +1940,15 @@ static void ggml_cuda_mul_mat(ggml_backend_cuda_context & ctx, const ggml_tensor
+         ggml_cuda_mul_mat_f(ctx, src0, src1, nullptr, dst);
+         return;
+     }
+-    if (ggml_cuda_should_use_mmvq(src0->type, cc, ne11)) {
++    // [Thor FP8] F8_E4M3 权重走专用 cuBLASLt FP8 路径（microbench: 266GB/s @M=8）
++    // GGML_FP8_FORCE_F16=1 时走对照路径（dequant F16 + cuBLAS），用于隔离 Lt kernel bug
++    if (src0->type == GGML_TYPE_F8_E4M3 && getenv("GGML_FP8_FORCE_F16") == nullptr) {
++        ggml_cuda_mul_mat_f8_e4m3(ctx, src0, src1, dst);
++        return;
++    }
++    if (ggml_cuda_should_use_mmvq(src0->type, cc, ne11) ||
++        // [B4] NVFP4 wide-M verify path (M=3..16): weights read once, beats MMQ ~90 GB/s
++        (src0->type == GGML_TYPE_NVFP4 && ne11 <= ggml_cuda_nvfp4_wide_max_batch())) {
+         ggml_cuda_mul_mat_vec_q(ctx, src0, src1, nullptr, dst);
+         return;
+     }
+@@ -1878,7 +1969,7 @@ static bool ggml_cuda_mul_mat_id_needs_sync(const ggml_tensor * dst, const int c
+         return true;
+     }
+ 
+-    if (dst->ne[2] <= MMVQ_MAX_BATCH_SIZE) {
++    if (dst->ne[2] <= mmvq_max_batch_size()) {
+         if (ggml_is_quantized(src0->type)) {
+             if (dst->ne[2] <= get_mmvq_mmid_max_batch(src0->type, cc)) {
+                 return false;
+@@ -1914,7 +2005,7 @@ static void ggml_cuda_mul_mat_id(ggml_backend_cuda_context & ctx, ggml_tensor *
+     // [TAG_MUL_MAT_ID_CUDA_GRAPHS]
+     if (src1->type == GGML_TYPE_F32 && dst->type == GGML_TYPE_F32) {
+         static_assert(MMVQ_MAX_BATCH_SIZE == MMVF_MAX_BATCH_SIZE);
+-        if (ne2 <= MMVQ_MAX_BATCH_SIZE) {
++        if (ne2 <= mmvq_max_batch_size()) {
+             if (ggml_is_quantized(src0->type)) {
+                 const int mmvq_mmid_max = get_mmvq_mmid_max_batch(src0->type, cc);
+                 if (ne2 <= mmvq_mmid_max) {
+@@ -4343,7 +4434,9 @@ static void ggml_cuda_graph_evaluate_and_capture(ggml_backend_cuda_context * cud
+                 GGML_UNUSED(integrated);
+ #endif  // NDEBUG
+ 
++                if (g_op_prof_on) ggml_cuda_op_prof_begin(cuda_ctx->stream());
+                 bool ok = ggml_cuda_compute_forward(*cuda_ctx, node);
++                if (g_op_prof_on) ggml_cuda_op_prof_end(cuda_ctx->stream(), node);
+                 if (!ok) {
+                     GGML_LOG_ERROR("%s: op not supported %s (%s)\n", __func__, node->name, ggml_op_name(node->op));
+                 }
+@@ -5148,6 +5241,7 @@ static bool ggml_backend_cuda_device_supports_op(ggml_backend_dev_t dev, const g
+                     case GGML_TYPE_Q8_0:
+                     case GGML_TYPE_MXFP4:
+                     case GGML_TYPE_NVFP4:
++                    case GGML_TYPE_F8_E4M3:
+                     case GGML_TYPE_Q2_K:
+                     case GGML_TYPE_Q3_K:
+                     case GGML_TYPE_Q4_K:
+@@ -5204,6 +5298,8 @@ static bool ggml_backend_cuda_device_supports_op(ggml_backend_dev_t dev, const g
+                         // 32-value sub-blocks, the row size does not guarantee
+                         // the QK_K super-blocks the get_rows kernel iterates on
+                         return op->src[0]->ne[0] % QK_K == 0;
++                    case GGML_TYPE_F8_E4M3:
++                        return op->src[0]->ne[0] % QK_F8_E4M3 == 0;
+                     default:
+                         return false;
+                 }

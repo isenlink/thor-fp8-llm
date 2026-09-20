@@ -1,0 +1,77 @@
+diff --git a/conversion/base.py b/conversion/base.py
+index d2d80be..335e2d1 100644
+--- a/conversion/base.py
++++ b/conversion/base.py
+@@ -131,6 +131,7 @@ class ModelBase:
+                  target_model_dir: Path | None = None,
+                  fuse_gate_up_exps: bool = False,
+                  fp8_as_q8: bool = False,
++                 fp8_native: bool = False,
+                  fuse_qkv: bool = False):
+         if type(self) is ModelBase or \
+                 type(self) is TextModel or \
+@@ -171,7 +172,9 @@ class ModelBase:
+         self._is_nvfp4 = False
+         self._is_mxfp4 = False
+         self._fp8_as_q8 = fp8_as_q8
++        self._fp8_native = fp8_native
+         self._fp8_dequantized: set[str] = set()
++        self._fp8_scales: dict[str, object] = {}
+ 
+         # Apply heuristics to figure out typical tensor encoding based on first tensor's dtype
+         # NOTE: can't use field "torch_dtype" in config.json, because some finetunes lie.
+@@ -556,6 +559,8 @@ class ModelBase:
+                 # Mixed-precision ModelOpt models: NVFP4 tensors are handled by
+                 # _generate_nvfp4_tensors; FP8 tensors have 1D weight_scale and
+                 # are dequantized here. k/v scale tensors are unused.
++                # [Thor patch] When fp8_as_q8 is set, keep FP8 tensors as-is for
++                # GGML_TYPE_F8_E4M3 output (raw bytes, scale absorbed at requant).
+                 for name in self.model_tensors.keys():
+                     if name.endswith(".weight_scale"):
+                         weight_name = name.removesuffix("_scale")
+@@ -567,6 +572,19 @@ class ModelBase:
+                         is_fp8_weight = False
+                         if self._fp8_as_q8:
+                             is_fp8_weight = w().dtype in (torch.float8_e4m3fn, torch.float8_e5m2)
++                        if is_fp8_weight:
++                            # Keep raw FP8 bytes for F8_E4M3 output; per-tensor scale
++                            # is materialized NOW (lazy generators are single-consumption)
++                            # and written as companion F32[1] ".scale" tensor later.
++                            sc_val = s()
++                            try:
++                                sc_f = float(sc_val.float().flatten()[0].item())
++                            except Exception:
++                                sc_f = float(np.asarray(sc_val.detach().cpu().numpy(), dtype=np.float32).flatten()[0])
++                            self._fp8_dequantized.add(weight_name)
++                            self._fp8_scales[weight_name] = sc_f
++                            tensors_to_remove.append(name)
++                            continue
+                         self.model_tensors[weight_name] = lambda w=w, s=s: dequant_simple(w(), s(), None)
+                         tensors_to_remove.append(name)
+                         if is_fp8_weight:
+@@ -732,6 +750,8 @@ class ModelBase:
+         del new_name, bid  # unused
+         # Force FP8-original tensors to Q8_0 when requested; Q8_0 is faster than F16/BF16.
+         if self._fp8_as_q8 and name in self._fp8_dequantized and n_dims >= 2:
++            if getattr(self, '_fp8_native', False):
++                return gguf.GGMLQuantizationType.F8_E4M3
+             return gguf.GGMLQuantizationType.Q8_0
+         return False
+ 
+@@ -1110,6 +1130,16 @@ class ModelBase:
+ 
+                 self.gguf_writer.add_tensor(new_name, data, raw_dtype=data_qtype)
+ 
++                # [Thor FP8] companion per-tensor scale for F8_E4M3 weights.
++                # Name follows llama.cpp generic ".scale" convention: "blk.N.attn_qkv.weight" -> "blk.N.attn_qkv.scale"
++                # (loaded by llama-model.cpp generic scale pass, applied via build_lora_mm -> ggml_mul)
++                if data_qtype == gguf.GGMLQuantizationType.F8_E4M3 and name in self._fp8_scales:
++                    sc_f = float(self._fp8_scales[name])
++                    sc_val = np.asarray([sc_f], dtype=np.float32)
++                    scale_name = new_name.removesuffix(".weight") + ".scale"
++                    self.gguf_writer.add_tensor(scale_name, sc_val)
++                    logger.info(f"  + {scale_name} = {sc_val[0]:.6g} (F32[1])")
++
+         qkv_buffers = (
+             self._q_buffer, self._k_buffer, self._v_buffer,
+             self._q_bias_buffer, self._k_bias_buffer, self._v_bias_buffer,

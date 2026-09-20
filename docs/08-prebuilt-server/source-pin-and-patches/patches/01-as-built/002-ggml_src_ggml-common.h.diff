@@ -1,0 +1,17 @@
+diff --git a/ggml/src/ggml-common.h b/ggml/src/ggml-common.h
+index 1dbbe32..3ffdf55 100644
+--- a/ggml/src/ggml-common.h
++++ b/ggml/src/ggml-common.h
+@@ -226,6 +226,12 @@ typedef struct {
+ } block_nvfp4;
+ static_assert(sizeof(block_nvfp4) == sizeof(uint8_t)*(QK_NVFP4/QK_NVFP4_SUB) + QK_NVFP4/2, "wrong nvfp4 block size/padding");
+ 
++#define QK_F8_E4M3 32
++typedef struct {
++    uint8_t qs[QK_F8_E4M3]; // FP8 E4M3 values (each byte is one element)
++} block_f8_e4m3;
++static_assert(sizeof(block_f8_e4m3) == QK_F8_E4M3, "wrong f8_e4m3 block size");
++
+ #define QK5_0 32
+ typedef struct {
+     ggml_half d;           // delta
