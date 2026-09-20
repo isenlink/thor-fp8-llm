@@ -50,14 +50,23 @@ bash /path/to/toolchain/build-thor-cuda128.sh "$PWD"    # 需 aarch64 交叉工�
 bash /path/to/toolchain/verify.sh bin/llama-server      # 验收
 ```
 
-**直接跑**（下载网盘二进制后）：
+**直接跑**（下载网盘二进制后）——⚠️ **必须先做宿主机准备，否则速度会明显偏低甚至起不来**：
 ```bash
+# ① 宿主机准备（每次开机后跑一次；需重启生效，池必须冷启动分配）：
+bash prebuilt-docs/02-launcher/prepare-host.sh
+#    作用：46 GiB GPU 大页池（23552 页 × 2 MiB）+ GPU carveout。
+#    自检：grep HugePages_Total /proc/meminfo → 必须 23552（≥42 GiB 才能跑 200K）
+#    ⚠️ 在线加页会碎片化（加到 32 GiB 就上不去）——改完 vm.nr_hugepages 必须重启一次
+
+# ② 然后启动服务：
 export MODEL=/path/to/target-nvfp4.gguf
 export DRAFT=/path/to/dflash2-draft.gguf
 export SPEC=dflash2 CTX=131072 SPEC_N=7
 bash prebuilt-docs/02-launcher/start-server.sh
 ```
-详见 [prebuilt-docs/README.md](prebuilt-docs/README.md)（逐参数说明 + 排障清单 + 精度自检）。
+**速度不对先查四件事**（占绝大多数）：①大页池 ≥23552 页 ②环境变量 `GGML_CUDA_GRAPH_OPT=1 GGML_MMVQ_MAX=2` 在进程环境里（用 `start-server.sh` 起就会自动带上）③`-ngl 99` 全层上 GPU ④DFlash2 起草器真生效（接受率 >0.5）。
+逐条判据与完整排障清单见 [prebuilt-docs/README.md](prebuilt-docs/README.md) §2/§6（"装完只有 9 t/s"排障）+ 精度自检 §7。
+实验操作纪律（预告-执行-收尾通报、四道门禁、板端 /tmp 断电即清需重传驱动件）见 tcgen05 分支的测量纪律工具说明。
 
 ## 实测读数（口径：看 ms/步，不看 t/s）
 
