@@ -1,11 +1,14 @@
-# 08 · 预编译服务端（sm_101a · NVFP4）— 源码补丁与部署文档
+# 08 · FP8 权重侧快路服务端（sm_101a · NVFP4）— 源码补丁与部署文档
 
+> **命名说明**：本目录是 **FP8 权重侧快路 + MMQ 路线**（非 tcgen05 内核路线）。
+> 更快的自研 T4 tcgen05 实验件**不公开**（精度未定论，仅内部记录），见仓库 tcgen05 分支的说明。
+>
 > 本目录内容来自 2026-09-19 的对外整理包（含完整补丁集 + 构建配方 + 启动脚本 + 实测读数）。
 > **预编译二进制不在本仓库**（体积原因），通过网盘分发，链接见下。
 
-## 网盘下载（预编译二进制）
+## 网盘下载（预编译二进制 + 起草器）
 
-**百度网盘**（包名 `thor-prebuilt-2026-09-19`）：
+**百度网盘**（包名 `thor-prebuilt-2026-09-19`，含二进制与 `optional-drafter/` 起草器目录）：
 🔗 https://pan.baidu.com/s/16CNsjD3J2psvBo57oJZ2ZQ?pwd=d8bc （提取码 `d8bc`）
 
 下载后请务必用下表 sha256 校验（防止传输损坏或版本不符）：
@@ -72,4 +75,28 @@ bash prebuilt-docs/02-launcher/start-server.sh
 - 投机草稿配方（MTP/DFlash2 深度甜点）→ [docs/04-nvfp4-optimization/speculative-drafting-recipes-2026-09-16.md](../04-nvfp4-optimization/speculative-drafting-recipes-2026-09-16.md)
 - KV 预算 / 256K 长上下文 → [docs/05-system-tuning/](../05-system-tuning/)
 - 基准方法论（口径陷阱）→ [docs/06-benchmarks/benchmark-methodology-2026-09-16.md](../06-benchmarks/benchmark-methodology-2026-09-16.md)
-- tcgen05 内核（更快的实验线，代码级整理包）→ [scripts/tcgen05-nvfp4-gemv/](../../scripts/tcgen05-nvfp4-gemv/)；该内核线的完整源码与构建材料在 `tcgen05` 分支（整理中）
+- tcgen05 内核（更快的实验线）→ 代码级整理包见 [scripts/tcgen05-nvfp4-gemv/](../../scripts/tcgen05-nvfp4-gemv/)；**自研 T4 tcgen05 实验件只记录不公开**（精度未定论），完整记录在仓库 `tcgen05` 分支
+
+## 起草器（DFlash2）详细说明
+
+起草器权重体积超出 GitHub 限制，不入仓——**放在上方百度网盘链接的 `optional-drafter/` 目录**。也可按以下详细名称自行获取。
+
+### BF16 档（生产读数标定档）★
+
+**`Qwen3.8-27B-DFlash2-BF16.gguf`** — 3,860,293,216 B（3.60 GiB），81 张量（DFlash2 形态）
+
+- sha256：`26d47ca20ab07688327a63d912acad222d924eaaa92a980cc488de3c67e736bc`
+- ⚠️ **本目录所有生产读数（128K 22.178 / 200K 19.698 t/s）与精度自检（150 题 150 对、0 空回答）都是配这一档起草器测的**——想复现表中数字请用它
+- 同系列还有 `Qwen3.8-27B-DFlash2-Q4_K_M`（1.06 GiB）/ `-Q8_0`（2.06 GiB）
+
+### Q2_K_S 档（便捷档）
+
+`drafter-dflash2-Q2_K_S.gguf` — 561,241,824 B（0.52 GiB），81 张量
+
+- 体积更小、自身前向更便宜，接受率略低但净值更赚（大 draft 不一定快，见负结果黑名单与投机配方文档）
+- 此档未做配对精度测试
+
+### 判别与上游
+
+- 判别方法：读 GGUF 头第 3 个数（张量数），**81 = DFlash2 可用**；58 = DFlash1；19 = MTP 侧车（不适用本用法）
+- 上游 PR 参考：llama.cpp #27342（`--spec-type draft-dflash` 支持在本目录的 pin `72797e89` 中已自带）
