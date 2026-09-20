@@ -94,7 +94,14 @@ bash prebuilt-docs/02-launcher/start-server.sh
 `drafter-dflash2-Q2_K_S.gguf` — 561,241,824 B（0.52 GiB），81 张量
 
 - 体积更小、自身前向更便宜，接受率略低但净值更赚（大 draft 不一定快，见负结果黑名单与投机配方文档）
+- sha256：`0c1a01efa952a752b8bf139e8beb934d07278422eefc2e0ba968a75ee8bed528`
 - 此档未做配对精度测试
+
+### 出处
+
+- 两档均出自上游 HuggingFace repo `incoai/Qwen3.8-27B-DFlash2`（commit `dedf8df68adfb1afeaf7b7480c0a0243108177b4`），
+  BF16 档即该 repo 的原始权重
+- 两档均为 `general.architecture = dflash`、81 张量，与 target 量化档解耦，任选一支即可
 
 ### 判别与上游
 
