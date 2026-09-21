@@ -206,6 +206,8 @@ grep -c draft-dflash <(strings 01-binary/llama-server-aarch64-sm101a-nvfp4)   # 
 
 定性结论：`136.5 GB/s`（生产）与 `257 GB/s`（隔离原型）之间差 1.88×，而粒度只值 −12%、寻址只值 −5.5% ⇒ **缺口在消费者/结构侧，不在访存侧**。
 
+**后续定位（2026-09-21）**：rb2 诊断系列已把"消费者/结构侧"具体化——`prodsf 203.53 → proda 144.21 GB/s（−29.1%）`，`proda` 已距生产腿仅 +5.6%，**主税项 = A ring/SFA 生产接线**；D-store ≈0、B sf/SFB ≈−10%、B 环本身可回 260。详见 [`03-reference/production-wire-attribution-2026-09-21.md`](03-reference/production-wire-attribution-2026-09-21.md)。
+
 ## 9. 已知限制与诚实声明
 
 - **本件是我们内部分支的编译产物**，基于 llama.cpp 上游 `72797e89`（2026-09-10）加本地补丁集（NVFP4/MMQ 权重侧快路、`speculative.cpp` 起草路径、server 侧若干改动），**不保证与上游 HEAD 兼容**。
