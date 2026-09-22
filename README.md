@@ -51,6 +51,16 @@ DRIVE Thor 的民间本地 LLM 部署资料几乎为零：官方只提供 DriveO
 
 ## Repo structure / 目录结构（整理中）
 
+### ⚡ 预编译二进制快速下载
+
+不想自己编译、只想直接跑 llama-server？**预编译二进制（74.7 MiB）走百度网盘分发**：
+
+🔗 **<https://pan.baidu.com/s/16CNsjD3J2psvBo57oJZ2ZQ?pwd=d8bc>** （提取码 `d8bc`）
+
+- 包名 `thor-prebuilt-2026-09-19`：llama-server + NVFP4 数值自检工具 + `optional-drafter/` 起草器目录
+- 下载后务必核对 sha256（清单见 [docs/08-fp8-fastpath-server/README.md](docs/08-fp8-fastpath-server/README.md)）
+- ⚠️ 跑之前**必须先做宿主机准备（大页池冷启动分配），否则速度会明显偏低甚至起不来**——照该 README 的"快速开始"两步走
+
 ```
 TROUBLESHOOTING.md        踩坑速查（症状索引，含报错原文 ← 优先看这个）
 docs/

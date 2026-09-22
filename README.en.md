@@ -50,6 +50,16 @@ experiments, and the measured data — to save the next person the same groping.
 
 ## Repo structure
 
+### ⚡ Prebuilt binary quick download
+
+Just want to run llama-server without compiling? **The prebuilt binary (74.7 MiB) is distributed via Baidu Netdisk**:
+
+🔗 **<https://pan.baidu.com/s/16CNsjD3J2psvBo57oJZ2ZQ?pwd=d8bc>** (extraction code `d8bc`)
+
+- Package `thor-prebuilt-2026-09-19`: llama-server + NVFP4 numerical self-check tools + `optional-drafter/` directory
+- Verify sha256 after download (checksums in [docs/08-fp8-fastpath-server/README.md](docs/08-fp8-fastpath-server/README.md))
+- ⚠️ **Host preparation (cold-start hugepage pool allocation) is mandatory before launching, otherwise throughput will be far below spec or the server won't start** — follow the "Quick start" two steps in that README
+
 ```
 TROUBLESHOOTING.md        Pitfall reference (symptom index, verbatim errors ← read this first)
 docs/
