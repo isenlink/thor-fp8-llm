@@ -1,8 +1,8 @@
 # Thor04 — Occamy-1.0（qwen35moe MoE）200K KV 长上下文实测
 
-> ⚠️ **分支定位**：本文档在分支 `q4km-moe-benchmarks` 上（**Q4_K_M MoE 实测线**，
-> 与仓库名指向的 FP8/NVFP4 主线不同题）。是否并入 `main` 由维护者决定；
-> main 上同族的部署配置见 `docs/05-system-tuning/llama-server-config.md`、
+> **线路定位**：本文档属 **Q4_K_M MoE 实测线**（与仓库名指向的 FP8/NVFP4 主线不同题，
+> 曾在独立分支上评审，2026-09-25 经维护者确认并入 `main`）。
+> 同族部署配置见 `docs/05-system-tuning/llama-server-config.md`、
 > 同族 MoE 吞吐见本目录 `thor03-qwen36-35b-a3b-moe-2026-09-15.md`。
 
 > **One-liner**: A Q4_K_M MoE (~35B total / ~3B active, 21.17 GB) runs with
