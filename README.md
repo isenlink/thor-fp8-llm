@@ -1,5 +1,10 @@
 # NVIDIA DRIVE Thor (Tegra264) LLM Deployment Notes / 车规域控本地大模型部署实战笔记
 
+> ⚠️ **定位声明（分支级，2026-09-27 补）**：本分支是 **tcgen05 实验线的记录分支**——
+> **实验件精度未定论，不对外发布、不承诺可用**，仅作过程记录（代码整理包、单测与
+> selftest、判据 demo、fixtures、测量纪律工具）；`main` 才是对外成品主线。
+> 其中 test/selftest/demo 字样文件均属该实验线的单测与演示件，不是仓库主线内容。
+
 > 民间实测记录：在 NVIDIA DRIVE Thor 域控板（p3960-0010 / Tegra264, sm_101a, DriveOS 7.0.3, CUDA 12.8）上
 > 从零部署 llama.cpp GPU 推理并调优至 NVFP4 量化路线的全过程。
 >
