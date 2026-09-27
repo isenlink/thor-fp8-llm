@@ -69,4 +69,4 @@
 ## 关联
 
 - 生产腿读数与内存侧排除链见 `03-reference/negative-results.md`（"这条线已收摊"条的延续——本系列把"消费者/结构侧"具体化到了 A ring/SFA）。
-- 权重拷贝腿速率沿革见 `scripts/tcgen05-nvfp4-gemv/README.md`（85.4 → 136.5 GB/s）。
+- 权重拷贝腿速率沿革见 `tcgen05` 分支内 `scripts/tcgen05-nvfp4-gemv/README.md`（85.4 → 136.5 GB/s）。

@@ -78,7 +78,7 @@ bash prebuilt-docs/02-launcher/start-server.sh
 - 200K 目标 30 t/s 未到（差 21%），本件是"能用的最好一件"，不是"最快的一件"——诚实口径。
 - tcgen05 内核路线更快（8K 41.8 / 128K 27.4 / 200K 24.1 t/s）——⚠️ 那是**另一条独立路线**，与本件无关：
   其中外部引擎的数字来自外部分享包纯二进制（无源码、非本仓产出、不分发）；
-  本仓自研 T4 tcgen05 实验件只记录不公开，代码与记录见 `tcgen05` 分支；本仓收录的其代码级整理包见 `scripts/tcgen05-nvfp4-gemv/`
+  本仓自研 T4 tcgen05 实验件只记录不公开，代码、代码级整理包与记录**均见 `tcgen05` 分支**（2026-09-27 起整理包从 main 移出——实验未定论内容不进公开主线）
 - 精度：150 题 × 8 方向（chat 口径、temp=0）32K 与 200K 均 150/150 全对、0 空回答。
 
 ## 与本仓其他部分的关系
@@ -86,7 +86,7 @@ bash prebuilt-docs/02-launcher/start-server.sh
 - 投机草稿配方（MTP/DFlash2 深度甜点）→ [docs/04-nvfp4-optimization/speculative-drafting-recipes-2026-09-16.md](../04-nvfp4-optimization/speculative-drafting-recipes-2026-09-16.md)
 - KV 预算 / 256K 长上下文 → [docs/05-system-tuning/](../05-system-tuning/)
 - 基准方法论（口径陷阱）→ [docs/06-benchmarks/benchmark-methodology-2026-09-16.md](../06-benchmarks/benchmark-methodology-2026-09-16.md)
-- tcgen05 内核（更快的实验线）→ 代码级整理包见 [scripts/tcgen05-nvfp4-gemv/](../../scripts/tcgen05-nvfp4-gemv/)；**自研 T4 tcgen05 实验件只记录不公开**（精度未定论），完整记录在仓库 `tcgen05` 分支
+- tcgen05 内核（更快的实验线）→ **自研 T4 tcgen05 实验件只记录不公开**（精度未定论），代码级整理包与完整记录均在仓库 `tcgen05` 分支（2026-09-27 起从 main 移出：实验未定论内容不进公开主线）
 
 ## 起草器（DFlash2）详细说明
 
