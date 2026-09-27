@@ -1,4 +1,6 @@
 # NVIDIA DRIVE Thor (Tegra264) LLM Deployment Notes / 车规域控本地大模型部署实战笔记
+> ⚠️ **本分支 = `vllm-sm101-replica`（vLLM 框架线）**：复现包内容在 [`vllm-sm101-replica/`](vllm-sm101-replica/)；`main` 分支是 **llama.cpp 线**，两条线相互独立、结论互不套用。
+
 
 > 民间实测记录：在 NVIDIA DRIVE Thor 域控板（p3960-0010 / Tegra264, sm_101a, DriveOS 7.0.3, CUDA 12.8）上
 > 从零部署 llama.cpp GPU 推理并调优至 NVFP4 量化路线的全过程。

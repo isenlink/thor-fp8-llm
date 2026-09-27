@@ -1,4 +1,6 @@
 # NVIDIA DRIVE Thor (Tegra264) LLM Deployment Notes
+> ⚠️ **This branch = `vllm-sm101-replica` (the vLLM line)**: the reproduction package lives in [`vllm-sm101-replica/`](vllm-sm101-replica/); `main` is the **llama.cpp** line — the two lines are independent and their conclusions do not cross-apply.
+
 
 > Grassroots field notes: deploying and optimizing llama.cpp GPU inference on an
 > NVIDIA DRIVE Thor domain controller (p3960-0010 / Tegra264, sm_101a,
