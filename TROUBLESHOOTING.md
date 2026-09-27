@@ -124,10 +124,13 @@ systemd unit / cron / rc.local 全都活在 overlay 上，格式化时一起被�
 **根因**：那 38GiB 差额是**内核级 carveout**（设备树级保留：GPU/SATA/CAM/安全岛等），
 用户态服务总共只占 <200MB。停服务毫无用处；要动 carveout 需改设备树，风险极高。
 
-**解法（安全路线）**：通过 **hugepages 扩容 GPU 池**，不动设备树。我们做到了
-20GiB → 42GiB（冷启动全量分配）。
+**解法（安全路线）**：通过 **hugepages 扩容 GPU 池**，不动设备树。我们从 20GiB
+一路扩到 42/46GiB，2026-09-26 又在三块板上扩到 **52/54/56GiB**（先开 swap 再扩池）。
 
-注意运行时扩容有**碎片化上限**：在线加只能到 ~32GiB，再高必须冷启动。
+运行时扩容的天花板**取决于池占用与开机新鲜度**（不是目标档位）：池全空闲时
+在线扩 54/56GiB 一轮直达；池被占用/长 uptime 时在线加几十页就撞顶（此时转
+持久化 + 干净重启，开机早期一气呵成）。详见
+[docs/05-system-tuning/hugepage-pool.md](docs/05-system-tuning/hugepage-pool.md)。
 
 📄 详见 [docs/01-hardware-recon/storage-memory-recon.md](docs/01-hardware-recon/storage-memory-recon.md)、
 [docs/05-system-tuning/](docs/05-system-tuning/)
