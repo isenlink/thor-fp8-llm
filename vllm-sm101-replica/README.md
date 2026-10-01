@@ -55,6 +55,9 @@ docs/
   PLAN-A-MULTIMODAL.md       ★ the vision-tower graft: architecture, 13 pitfalls, fixes
   KNOWN-ISSUES.md            what's broken / open, with reproduction cases
   BENCHMARKS.md              full methodology + numbers, so you can compare fairly
+  10-FINAL-CONFIG-20261001.md ★ 2026-10-01 production-final config: 262144 ctx,
+                             2 concurrent, MTP+1, 52G pool, prefix-caching proven
+                             non-functional for GDN, 150-question acceptance data
 build/                       cross-compile host scripts (paths are placeholders — set your own)
 patches/                     every source modification, named by purpose
 model-classes/               qwen38_vl.py (the grafted model class) + MTP patch
@@ -87,20 +90,22 @@ This is an unofficial community effort — not affiliated with vLLM, NVIDIA, or 
 
 ## Binary distribution (not stored in git)
 
-The full distribution tarball and all wheels/debs stay **out of the git tree**
-(git is for source + docs). Everything below was hash-measured from the package.
+The wheels/debs stay **out of the git tree** (git is for source + docs).
+**下载 / Download → ModelScope:**
+🔗 **<https://www.modelscope.cn/models/navyyang/thor04-vllm-p3-sm101-deploy>**
+— full tree: `binaries/` (torch 273 MB + vLLM 460 MB wheels), `build/gcc-debs/`
+(offline gcc-12 toolchain), plus docs/patches/scripts exactly as in this branch.
+After downloading, verify everything: `sha256sum -c SHA256SUMS.txt` (67 files, all hash-measured).
+
+All below hashes were measured from the distributed files:
 
 | Asset | Size (bytes) | sha256 |
 |---|---:|---|
-| `vllm-sm101-replica-20260927.tar.gz` (complete package: docs + patches + wheels + offline gcc debs) | 767,571,390 | `dde6cbdccf0a0d2aa2644667b845a8ec2a41716f95a2bd8a49e023c18d30a002` |
 | `torch-2.9.0-cp312-cp312-linux_aarch64-fixed.whl` (aarch64 cross-build of upstream torch 2.9.0, pytorch.org) | 272,523,042 | `3479cc4c05eadca33b2bd30a77190ca91d5c0547060b1e935d1c15e3e76cddaa` |
 | `vllm-0.11.2-cp312-cp312-linux_aarch64.whl` (aarch64 cross-build of upstream vLLM 0.11.2, github.com/vllm-project/vllm) | 459,708,107 | `a30627de81ca1f1fad4911be4d0a3556ae462bd15c27db9c47924706ca471cc9` |
 | `compressed_tensors-0.9.0-py3-none-any.whl` | 96,438 | `c4a0bccf2fd180a18a4bf0646f7746df4ea8ea537c06061f4b571662debf4424` |
 | `frozendict-2.4.7-py3-none-any.whl` | 16,264 | `972af65924ea25cf5b4d9326d549e69a9a4918d8a76a9d3a7cd174d98b237550` |
-| `build/gcc-debs/` (offline gcc-12 toolchain debs, in tarball only) | 46,222,672 | (in tarball) |
-
-🔗 **下载：链接待补**（发布时填入百度网盘直链 + 提取码；或见本仓 Releases）
-— download the tarball, then `sha256sum -c` against the table above.
+| `build/gcc-debs/` (19 offline gcc-12 toolchain debs) | 46,222,672 | (in SHA256SUMS.txt) |
 
 ## Path aliases (brand-neutral naming)
 

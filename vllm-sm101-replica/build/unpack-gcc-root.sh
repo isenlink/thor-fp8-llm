@@ -1,6 +1,4 @@
 #!/bin/bash
-# NOTE: /path/to/* are placeholders — set them to your own workspace.
-#       Original host-internal paths were removed for publication.
 # Rebuild offline gcc root on the board (board image has no gcc).
 # Run ON THE BOARD, from the directory containing gcc-debs/.
 # Runtime torch.compile needs a real gcc; serve scripts expect it at $GCC_ROOT.
