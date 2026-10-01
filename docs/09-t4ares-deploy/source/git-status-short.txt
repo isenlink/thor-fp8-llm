@@ -1,0 +1,48 @@
+ M common/speculative.cpp
+ M conversion/base.py
+ M convert_hf_to_gguf.py
+ M ggml/include/ggml.h
+ M ggml/src/ggml-common.h
+ M ggml/src/ggml-cuda/common.cuh
+ M ggml/src/ggml-cuda/convert.cu
+ M ggml/src/ggml-cuda/dequantize.cuh
+ M ggml/src/ggml-cuda/fattn-mma-f16.cuh
+ M ggml/src/ggml-cuda/fattn.cu
+ M ggml/src/ggml-cuda/ggml-cuda.cu
+ M ggml/src/ggml-cuda/mmq.cu
+ M ggml/src/ggml-cuda/mmq.cuh
+ M ggml/src/ggml-cuda/mmvq.cu
+ M ggml/src/ggml-cuda/mmvq.cuh
+ M ggml/src/ggml-cuda/ssm-conv.cu
+ M ggml/src/ggml-cuda/vecdotq.cuh
+ M ggml/src/ggml-quants.c
+ M ggml/src/ggml-quants.h
+ M ggml/src/ggml.c
+ M gguf-py/gguf/constants.py
+ M gguf-py/gguf/quants.py
+ M src/models/delta-net-base.cpp
+ M src/models/models.h
+ M src/models/qwen35.cpp
+ M tools/server/server-context.cpp
+?? ggml/include/ggml.h.bak
+?? ggml/src/ggml-common.h.bak
+?? ggml/src/ggml-cuda/CMakeLists.txt.bak-20260916-m2c
+?? ggml/src/ggml-cuda/common.cuh.bak
+?? ggml/src/ggml-cuda/common.cuh.bak-20260916-m2c
+?? ggml/src/ggml-cuda/fattn-mma-f16.cuh.bak-20260914
+?? ggml/src/ggml-cuda/fp8-cublaslt.cu
+?? ggml/src/ggml-cuda/fp8-mma.cuh
+?? ggml/src/ggml-cuda/fp8-mmq-production.cu
+?? ggml/src/ggml-cuda/fp8-mmq.cu
+?? ggml/src/ggml-cuda/mmq.cu.bak-20260916-m2c
+?? ggml/src/ggml-cuda/mmvq.cu.bak-20260916-2120
+?? ggml/src/ggml-cuda/ssm-conv.cu.orig
+?? ggml/src/ggml-cuda/t4/
+?? ggml/src/ggml-cuda/t4_mmq.cu
+?? ggml/src/ggml-cuda/t4_mmq.cu.bak-20260916-2045
+?? ggml/src/ggml-cuda/t4_mmq.cu.bak-20260916-2115
+?? ggml/src/ggml-cuda/t4_mmq.cu.bak-20260916-4a
+?? ggml/src/ggml-cuda/t4_mmq.cu.bak-20260916-m2c-s2
+?? ggml/src/ggml-cuda/t4_mmq.cuh
+?? ggml/src/ggml-cuda/t4_mmq.cuh.bak-20260916-2045
+?? ggml/src/ggml-cuda/t4_mmq_pred.h

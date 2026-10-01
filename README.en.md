@@ -49,6 +49,7 @@ experiments, and the measured data — to save the next person the same groping.
 | 9/16 Multi-slot concurrency + KV/prefix reuse | **Set `np` ≥ peak concurrency** (so waves = ⌈concurrency/np⌉ = 1): 4-way/8-way instantaneous aggregate **2.12×/2.67×**, while an `np=1` control arm gets **zero speedup** (all the gain comes from multi-slot continuous batching); **extra slots never slow a single stream** (≤0.06 t/s per request); multi-turn prefix reuse saves **91–97%** of prefill (the last 4 tokens are always recomputed by upstream checkpoint design, source `{4+n_ubatch, 4}`); **cross-request prefix caching is unavailable** (`llama_memory_can_shift()` = false ⇒ `--cache-reuse` is a no-op) ⇒ prefill inflates **3.9×** under concurrency and TTFT degrades; verdict: **no need for vLLM for multi-turn chat**, only for "one fixed long system prompt + many independent short requests" → [details](docs/06-benchmarks/thor04-multi-slot-concurrency-kv-reuse-2026-09-16.md) |
 | 9/15 Qwen3.6-35B-A3B (Q4_K_M MoE) | pp512 **739.98 t/s** / tg128 **40.24 t/s** — dense-4B-class speed with 9× the parameters; extremely asymmetric GQA (2 KV heads) ⇒ 256K of f16 KV costs only **20 GB**; 71 °C peak under air cooling → [details](docs/06-benchmarks/thor03-qwen36-35b-a3b-moe-2026-09-15.md) |
 | 9/23 Occamy-1.0 at 200K KV (Q4_K_M MoE) | **`-c 200000` (`n_ctx_slot=200192`) verified**: a 35,651-token prompt is fully accepted (the 32768 baseline cannot hold it); prefill 694–705 t/s; short-context decode **50.4 t/s, unchanged from the 32K baseline's 50.11** (6.1× the context, same speed), 43.9 t/s at 34K context (**−12.5%**); ⚠️ negative result: attaching the 27B DFlash2 draft **crashes** in speculative init (`GGML_ASSERT(ggml_can_repeat)`), a `qwen35moe`-compatible drafter is required → [details](docs/06-benchmarks/thor04-occamy-moe-200k-context-2026-09-23.md) |
+| **10/01 T4/ARES production deploy package (262K)** | RadixArk-F8attn-v2 + DFlash2 n=7 + mmproj at `-c 262144`: **200K decode 22.46 / 21.88 / 22.11 t/s across three runs** (prefill ~134 t/s), **short-prompt 34.5–34.8 t/s**, draft acceptance 59.8% (short) / 51.0% (200K); known boundary = 30 t/s at 200K has no demonstrated path (attention already at the byte floor, 13.9 GB/step KV reads) → [details](docs/09-t4ares-deploy/README.md) (**prebuilt binary on ModelScope**) |
 | GPU hugepage pool | 20G → 42G → 46G, then **52/54/56G** on three boards (2026-09-26): swap-first expansion, one-round live growth when the pool is idle, fragmentation ceiling only appears when the pool is occupied; ⚠️ **grow-only**: shrinking the pool breaks model loading (`unable to allocate CUDA0 buffer`, A/B measured); ⚠️ **56G tier cannot load a 27B-class long-context LLM — measured on two boards, resident and on-demand starts fail identically** (`CUDA error: out of memory`; host ceiling 1.7G); ⚠️ **v2.3 (2026-09-29): the 54G tier has a boundary too** — adding mmproj (vision projector) + draft (speculative-decoding model) on top of the main model pushed the host working set from 3.49G to 5.28G, over the ~4G ceiling at 54G: **845-iteration CUDA OOM restart loop**; at the **50G tier the same pipeline loaded first try** (33-35 t/s sustained) ⇒ **the pool ceiling for multi-component inference pipelines is 50G — budget by the peak RSS of every component**, see 05/ |
 | Full-load temperature | 72–74 °C (passive cooling, stable) |
 
@@ -56,7 +57,11 @@ experiments, and the measured data — to save the next person the same groping.
 
 ### ⚡ Prebuilt binary quick download
 
-Just want to run llama-server without compiling? **The prebuilt binary (74.7 MiB) is distributed via Baidu Netdisk**:
+**Latest production build (2026-10-01, T4/ARES final, 262K + DFlash2 + mmproj, 200K decode 22 t/s / short-prompt 34.8 t/s)**
+→ **ModelScope**: <https://www.modelscope.cn/models/navyyang/thor01-qwen38-27b-dflash2-t4ares-deploy>
+(79 MiB binary + source snapshot + test data, full SHA256SUMS; deployment docs in [docs/09-t4ares-deploy](docs/09-t4ares-deploy/README.md))
+
+Older FP8 fast-path server (2026-09-19, 74.7 MiB) is distributed via Baidu Netdisk:
 
 🔗 **<https://pan.baidu.com/s/16CNsjD3J2psvBo57oJZ2ZQ?pwd=d8bc>** (extraction code `d8bc`)
 
@@ -73,6 +78,7 @@ docs/
   04-nvfp4-optimization/  NVFP4 quantization + speculative-decoding tuning (incl. failed MTP K7, B3 kernel-level optimization decision chain, microbench breakdown, correctness-incident fix chain, final results, rejected follow-up paths, GPU deadlock discipline, multi-board parallel testing readiness, **drafting recipes: depth sweet spots / mixed-precision draft / content-type dependence**, **the DFlash2 verdict retraction**)
   05-system-tuning/       Hugepage pool expansion & persistence (**incl. grow-only proof, the 52/54/56G ladder, swap-first method, five-source persistence, the two-board 56G+LLM load-failure measurements**), overlay, power-loss recovery, temperature, **KV budget & 256K measurements**, **runtime memory-growth investigation (solved: prompt-cache default exceeds usable RAM)**
   06-benchmarks/          Per-stage benchmarks + community comparison, **benchmark methodology (three measurement traps + paired design)**, **speculative-decoding matrix**, **multi-slot concurrency + KV/prefix reuse measurements**, **Q4_K_M MoE throughput + 200K KV measurements**, secondhand Orin-X/Thor market survey
+  09-t4ares-deploy/       **10/01 production deploy package (T4/ARES final)**: 262K context + DFlash2 + mmproj, three 200K measured runs (raw jsonl), build recipe & on-board deploy.sh (**binary distributed via ModelScope — see that README**)
 scripts/                  Board/host helper scripts (UART probe, GPU pool check, B3 kernel microbench suite)
 ```
 

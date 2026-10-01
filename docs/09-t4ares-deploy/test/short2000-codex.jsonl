@@ -1,0 +1,3 @@
+{"stage": "result", "rep": 1, "trial": "short2000-codex", "prompt_tokens": 1995, "predicted_n": 384, "predicted_ms": 11097.509, "decode_tps": 34.51224955077757, "prefill_tps": 220.45024669984875, "draft_n": 517, "draft_n_accepted": 309, "wall_seconds": 20.153}
+{"stage": "result", "rep": 2, "trial": "short2000-codex", "prompt_tokens": 1995, "predicted_n": 384, "predicted_ms": 11017.845, "decode_tps": 34.761788716396, "prefill_tps": 220.5022189486454, "draft_n": 517, "draft_n_accepted": 309, "wall_seconds": 20.071}
+{"stage": "result", "rep": 3, "trial": "short2000-codex", "prompt_tokens": 1995, "predicted_n": 384, "predicted_ms": 11014.66, "decode_tps": 34.771840438107034, "prefill_tps": 220.52817769773668, "draft_n": 517, "draft_n_accepted": 309, "wall_seconds": 20.066}

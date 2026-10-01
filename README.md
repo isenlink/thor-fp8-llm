@@ -50,6 +50,7 @@ DRIVE Thor 的民间本地 LLM 部署资料几乎为零：官方只提供 DriveO
 | 9-16 多 slot 并发 + KV/前缀复用 | **`np` ≥ 峰值并发数**（让波数 = ⌈并发/np⌉ = 1）：4 路/8 路瞬时聚合 **2.12×/2.67×**，`np=1` 控制组**零提升**（收益 100% 来自多 slot 连续批处理）；**开多 slot 不拖慢单流**（逐请求差 ≤0.06 t/s）；多轮前缀复用 **91–97%**（末尾 4 token 由上游 checkpoint 设计必重算，源码 `{4+n_ubatch, 4}`）；**跨请求前缀缓存不可用**（`llama_memory_can_shift()`=false ⇒ `--cache-reuse` 无效）⇒ 并发下 prefill 放大 **3.9×**、TTFT 恶化；结论：**多轮对话场景不需要 vLLM**，只有「固定长 system prompt + 大量独立短请求」才值得考虑 → [详见](docs/06-benchmarks/thor04-multi-slot-concurrency-kv-reuse-2026-09-16.md) |
 | 9-15 Qwen3.6-35B-A3B（Q4_K_M MoE） | pp512 **739.98 t/s** / tg128 **40.24 t/s** —— 达到 4B 稠密模型的速度但容量大 9 倍；GQA 极不对称（2 个 KV 头）⇒ 256K f16 KV 仅 **20 GB**；风冷峰值 71°C → [详见](docs/06-benchmarks/thor03-qwen36-35b-a3b-moe-2026-09-15.md) |
 | 9-23 Occamy-1.0 200K KV（Q4_K_M MoE） | **`-c 200000`（`n_ctx_slot=200192`）实测可用**：35,651 token 的 prompt 完整接收（32768 基线装不下）；prefill 694–705 t/s；短上下文 decode **50.4 t/s 与 32K 基线 50.11 持平**（容量扩 6.1×、速度不掉），34K 上下文 decode **43.9 t/s（−12.5%）**；⚠️ 负面结果：把 27B 的 DFlash2 草稿挂上来会在投机初始化 `GGML_ASSERT(ggml_can_repeat)` 崩溃，需 `qwen35moe` 兼容草稿 → [详见](docs/06-benchmarks/thor04-occamy-moe-200k-context-2026-09-23.md) |
+| **10-01 T4/ARES 生产部署包（262K 口径）** | RadixArk-F8attn-v2 + DFlash2 n=7 + mmproj，`-c 262144`：**200K decode 22.46 / 21.88 / 22.11 t/s 三次实测**（prefill ~134 t/s）、**短提示 34.5–34.8 t/s**、draft acceptance 59.8%（短）/51.0%（200K）；已知边界 = 200K decode 30 t/s 暂无可证路径（attention 贴字节地板，KV 读 13.9 GB/step）→ [详见](docs/09-t4ares-deploy/README.md)（**预编译二进制已上 ModelScope**） |
 | GPU 大页池 | 20G → 42G → 46G，2026-09-26 三板再扩 **52/54/56G**（先开 swap 再扩池；池全空闲时 live 一轮直达，碎片天花板只在池被占用时出现）；⚠️ **只能扩不能缩**（缩池会导致 `unable to allocate CUDA0 buffer`，A/B 实测）；⚠️ **56G 档实测拉不动 27B 级长上下文 LLM**——两块板、常驻与按需拉起同崩 `CUDA error: out of memory`（宿主天花板 1.7G，与生命周期无关）；⚠️ **v2.3（2026-09-29）：54G 档也有边界**——主模型叠加 mmproj+draft 后宿主峰值 3.49G→5.28G，54G 天花板 ~4G 装不下，CUDA OOM 崩溃循环 845 次；降到 **50G 档一次加载成功**（33-35 t/s 稳定服务）⇒ **跑多组件推理管线的池上限 = 50G，宿主工作集按全部组件峰值算**；**同档跑 MiniMax-H3 扩散可行**（43.0 GB 权重全在池、引擎自报 RAM 0.00MB）⇒ 档位划界 = 负载宿主工作集，见 05 目录 |
 | 满载温度 | 72–74°C（被动散热，稳定） |
 
@@ -57,7 +58,11 @@ DRIVE Thor 的民间本地 LLM 部署资料几乎为零：官方只提供 DriveO
 
 ### ⚡ 预编译二进制快速下载
 
-不想自己编译、只想直接跑 llama-server？**预编译二进制（74.7 MiB）走百度网盘分发**：
+**最新生产版（2026-10-01，T4/ARES 定案版，262K + DFlash2 + mmproj，200K decode 22 t/s / 短提示 34.8 t/s）**
+→ **ModelScope**：<https://www.modelscope.cn/models/navyyang/thor01-qwen38-27b-dflash2-t4ares-deploy>
+（79 MiB 二进制 + 源码快照 + 测试数据，全件 SHA256SUMS；部署文档见 [docs/09-t4ares-deploy](docs/09-t4ares-deploy/README.md)）
+
+旧版 FP8 快路服务端（2026-09-19，74.7 MiB）走百度网盘分发：
 
 🔗 **<https://pan.baidu.com/s/16CNsjD3J2psvBo57oJZ2ZQ?pwd=d8bc>** （提取码 `d8bc`）
 
@@ -76,6 +81,7 @@ docs/
   06-benchmarks/          各阶段基准数据与复现命令（含 200K 基准台账）、**基准方法论（三个口径陷阱 + 配对设计）**、**投机解码全矩阵**、**多 slot 并发 + KV/前缀复用实测**、**Q4_K_M MoE 吞吐与 200K KV 实测**、社区同款板实测汇总、**二手 Orin-X/Thor 捡漏市场调研（丝印对照/行情/千问实测速度转引）**
   07-hermes-agent/        在板上部署 Agent：**全量落非易失分区 + 脏断电自愈**、两条安装路径对照、两条硬约束、等价验收
   08-prebuilt-server/     **预编译服务端配套**：完整源码补丁集（pin 72797e89 + 12 补丁 + 4 新增 FP8 源文件）、交叉编译配方、启动脚本、128K/200K 实测读数、9 t/s 排障清单、精度自检（**二进制本体走网盘分发，见该目录 README**）
+  09-t4ares-deploy/       **10-01 生产部署包（T4/ARES 定案版）**：262K 上下文 + DFlash2 + mmproj、200K 三次实测 jsonl、构建配方与板端 deploy.sh（**二进制走 ModelScope 分发，见该目录 README**）
 scripts/                  板端/主机实用脚本（串口探测、GPU 池检查、B3 kernel microbench 全家桶）；
                           tcgen05 实验线的代码级整理包在 `tcgen05` 分支（实验未定论，不进主线）
 ```
