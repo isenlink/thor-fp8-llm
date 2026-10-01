@@ -88,14 +88,21 @@ Scripts and docs: MIT. Upstream vLLM/torch keep their licenses.
 This is an unofficial community effort — not affiliated with vLLM, NVIDIA, or Qwen.
 
 
-## Binary distribution (not stored in git)
+## Binary & model distribution (not stored in git)
 
-The wheels/debs stay **out of the git tree** (git is for source + docs).
-**下载 / Download → ModelScope:**
+The wheels/debs and model weights stay **out of the git tree** (git is for source + docs).
+
+**① 引擎二进制 / Engine binaries → ModelScope:**
 🔗 **<https://www.modelscope.cn/models/navyyang/thor04-vllm-p3-sm101-deploy>**
 — full tree: `binaries/` (torch 273 MB + vLLM 460 MB wheels), `build/gcc-debs/`
 (offline gcc-12 toolchain), plus docs/patches/scripts exactly as in this branch.
 After downloading, verify everything: `sha256sum -c SHA256SUMS.txt` (67 files, all hash-measured).
+
+**② 模型权重 / Model weights → ModelScope:**
+🔗 **<https://www.modelscope.cn/models/navyyang/qwen38-27b-nvfp4-vllm-p3-thor04>**
+— production safetensors pair (23.8G main + 849M MTP head) + configs, exactly as
+serving on the board; ready to serve, no conversion needed. Apache-2.0, provenance in `NOTICE.md`.
+Verify: `sha256sum -c SHA256SUMS.txt` (main model `1565f967…`, MTP `1d8268aa…`).
 
 All below hashes were measured from the distributed files:
 
