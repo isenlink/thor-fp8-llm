@@ -63,12 +63,18 @@ experiments, and the measured data — to save the next person the same groping.
 ### ⚡ Prebuilt binary quick download
 
 **vLLM line (262144 long context / 2 concurrent / MTP / multimodal, production-final 2026-10-01)**
-→ **ModelScope**: <https://www.modelscope.cn/models/navyyang/thor04-vllm-p3-sm101-deploy>
+→ Engine binaries **ModelScope**: <https://www.modelscope.cn/models/navyyang/thor04-vllm-p3-sm101-deploy>
 (torch + vLLM wheels 732 MB + offline gcc toolchain + full SHA256SUMS; docs and patches on the `vllm-sm101-replica` branch)
+→ Model weights **ModelScope**: <https://www.modelscope.cn/models/navyyang/qwen38-27b-nvfp4-vllm-p3-thor04>
+(HF safetensors 23.8G + MTP head 849M + configs — the exact production weights serving on the board, ready to serve; Apache 2.0)
 
 **Latest production build (2026-10-01, T4/ARES final: 262K + DFlash2 + mmproj, 200K decode 22 t/s / short-prompt 34.8 t/s)**
-→ **ModelScope**: <https://www.modelscope.cn/models/navyyang/thor01-qwen38-27b-dflash2-t4ares-deploy>
+→ Engine binary **ModelScope**: <https://www.modelscope.cn/models/navyyang/thor01-qwen38-27b-dflash2-t4ares-deploy>
 (79 MiB binary + source snapshot + test data + full SHA256SUMS; deployment doc in [docs/t4ares-deploy-download.md](docs/t4ares-deploy-download.md), full version also inside the ModelScope repo)
+→ Model weights **ModelScope**: <https://www.modelscope.cn/models/navyyang/qwen38-27b-gguf-t4ares-thor01>
+(RadixArk-F8attn-v2.gguf 19.57G + DFlash2-BF16 draft + mmproj, all three sha256 verified against the docs; Apache 2.0)
+
+> ⚠️ The two lines keep their **model weights in separate repos**: vLLM line = safetensors (thor04 repo), llama.cpp line = GGUF (thor01 repo). Do not mix.
 
 Older FP8 fast-path server (2026-09-19, 74.7 MiB) is distributed via Baidu Netdisk:
 

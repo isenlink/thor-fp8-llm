@@ -71,12 +71,18 @@ DRIVE Thor 的民间本地 LLM 部署资料几乎为零：官方只提供 DriveO
 ### ⚡ 预编译二进制快速下载
 
 **vLLM 线（262144 长上下文 / 2 并发 / MTP / 多模态，10-01 生产定稿）**
-→ **ModelScope**：<https://www.modelscope.cn/models/navyyang/thor04-vllm-p3-sm101-deploy>
+→ 引擎二进制 **ModelScope**：<https://www.modelscope.cn/models/navyyang/thor04-vllm-p3-sm101-deploy>
 （torch + vLLM wheel 732 MB + 离线 gcc 工具链 + 全件 SHA256SUMS；文档与补丁在 `vllm-sm101-replica` 分支）
+→ 模型权重 **ModelScope**：<https://www.modelscope.cn/models/navyyang/qwen38-27b-nvfp4-vllm-p3-thor04>
+（HF safetensors 23.8G + MTP 头 849M + configs，即板上在跑的生产权重，开箱即 serve；Apache 2.0）
 
 **最新生产版（2026-10-01，T4/ARES 定案版：262K + DFlash2 + mmproj，200K decode 22 t/s / 短提示 34.8 t/s）**
-→ **ModelScope**：<https://www.modelscope.cn/models/navyyang/thor01-qwen38-27b-dflash2-t4ares-deploy>
+→ 引擎二进制 **ModelScope**：<https://www.modelscope.cn/models/navyyang/thor01-qwen38-27b-dflash2-t4ares-deploy>
 （79 MiB 二进制 + 源码快照 + 测试数据 + 全件 SHA256SUMS；部署文档见 [docs/t4ares-deploy-download.md](docs/t4ares-deploy-download.md)，完整版同在 ModelScope 仓内）
+→ 模型权重 **ModelScope**：<https://www.modelscope.cn/models/navyyang/qwen38-27b-gguf-t4ares-thor01>
+（RadixArk-F8attn-v2.gguf 19.57G + DFlash2-BF16 草稿 + mmproj，三件 sha 与文档一致；Apache 2.0）
+
+> ⚠️ 两条线的**模型权重分属两仓**：vLLM 线=safetensors（thor04 仓），llama.cpp 线=GGUF（thor01 仓），勿混用。
 
 旧版 FP8 快路服务端（2026-09-19，74.7 MiB）走百度网盘分发：
 
