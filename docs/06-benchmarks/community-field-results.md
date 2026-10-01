@@ -5,6 +5,9 @@
 > hit 34.91 tok/s decode with FP8 + MTP K7 at 128K context.
 >
 > 日期：2026-09-07（用户提供资料，本仓库版：脱敏整理）
+>
+> 相关：买板前的市场/硬件识别视角（Orin-X/Thor 二手捡漏行情、丝印料号对照、
+> 千问系模型社区实测速度）见 [secondhand-orin-thor-market-survey-2026-10.md](secondhand-orin-thor-market-survey-2026-10.md)
 
 ## 路线
 

@@ -72,7 +72,7 @@ docs/
   03-model-conversion/    FP8 → GGUF conversion, three-layer obstacles + model file ledger
   04-nvfp4-optimization/  NVFP4 quantization + speculative-decoding tuning (incl. failed MTP K7, B3 kernel-level optimization decision chain, microbench breakdown, correctness-incident fix chain, final results, rejected follow-up paths, GPU deadlock discipline, multi-board parallel testing readiness, **drafting recipes: depth sweet spots / mixed-precision draft / content-type dependence**, **the DFlash2 verdict retraction**)
   05-system-tuning/       Hugepage pool expansion & persistence (**incl. grow-only proof, the 52/54/56G ladder, swap-first method, five-source persistence, the two-board 56G+LLM load-failure measurements**), overlay, power-loss recovery, temperature, **KV budget & 256K measurements**, **runtime memory-growth investigation (solved: prompt-cache default exceeds usable RAM)**
-  06-benchmarks/          Per-stage benchmarks + community comparison, **benchmark methodology (three measurement traps + paired design)**, **speculative-decoding matrix**, **multi-slot concurrency + KV/prefix reuse measurements**, **Q4_K_M MoE throughput + 200K KV measurements**
+  06-benchmarks/          Per-stage benchmarks + community comparison, **benchmark methodology (three measurement traps + paired design)**, **speculative-decoding matrix**, **multi-slot concurrency + KV/prefix reuse measurements**, **Q4_K_M MoE throughput + 200K KV measurements**, secondhand Orin-X/Thor market survey
 scripts/                  Board/host helper scripts (UART probe, GPU pool check, B3 kernel microbench suite)
 ```
 
