@@ -57,7 +57,11 @@ DRIVE Thor 的民间本地 LLM 部署资料几乎为零：官方只提供 DriveO
 
 ### ⚡ 预编译二进制快速下载
 
-不想自己编译、只想直接跑 llama-server？**预编译二进制（74.7 MiB）走百度网盘分发**：
+**最新生产版（2026-10-01，T4/ARES 定案版：262K + DFlash2 + mmproj，200K decode 22 t/s / 短提示 34.8 t/s）**
+→ **ModelScope**：<https://www.modelscope.cn/models/navyyang/thor01-qwen38-27b-dflash2-t4ares-deploy>
+（79 MiB 二进制 + 源码快照 + 测试数据 + 全件 SHA256SUMS；部署文档见 [docs/t4ares-deploy-download.md](docs/t4ares-deploy-download.md)，完整版同在 ModelScope 仓内）
+
+旧版 FP8 快路服务端（2026-09-19，74.7 MiB）走百度网盘分发：
 
 🔗 **<https://pan.baidu.com/s/16CNsjD3J2psvBo57oJZ2ZQ?pwd=d8bc>** （提取码 `d8bc`）
 

@@ -56,7 +56,11 @@ experiments, and the measured data — to save the next person the same groping.
 
 ### ⚡ Prebuilt binary quick download
 
-Just want to run llama-server without compiling? **The prebuilt binary (74.7 MiB) is distributed via Baidu Netdisk**:
+**Latest production build (2026-10-01, T4/ARES final: 262K + DFlash2 + mmproj, 200K decode 22 t/s / short-prompt 34.8 t/s)**
+→ **ModelScope**: <https://www.modelscope.cn/models/navyyang/thor01-qwen38-27b-dflash2-t4ares-deploy>
+(79 MiB binary + source snapshot + test data + full SHA256SUMS; deployment doc in [docs/t4ares-deploy-download.md](docs/t4ares-deploy-download.md), full version also inside the ModelScope repo)
+
+Older FP8 fast-path server (2026-09-19, 74.7 MiB) is distributed via Baidu Netdisk:
 
 🔗 **<https://pan.baidu.com/s/16CNsjD3J2psvBo57oJZ2ZQ?pwd=d8bc>** (extraction code `d8bc`)
 
