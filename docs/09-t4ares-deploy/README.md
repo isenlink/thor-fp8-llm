@@ -19,6 +19,20 @@
 
 （全 13 件校验和清单 `SHA256SUMS.txt` 在 ModelScope 仓内；下载后务必 `sha256sum -c` 核验。）
 
+## 模型权重下载
+
+**ModelScope**（三件 GGUF + LICENSE + NOTICE + SHA256SUMS，全链 Apache 2.0）：
+🔗 https://www.modelscope.cn/models/navyyang/qwen38-27b-gguf-t4ares-thor01
+
+| 文件 | 大小 | sha256 |
+|---|---|---|
+| `RadixArk-F8attn-v2.gguf` | 21,016,353,984 B | `d15dac91…2e7e9` |
+| `Qwen3.8-27B-DFlash2-BF16.gguf` | 3,860,293,216 B | `26d47ca2…736bc` |
+| `mmproj-Qwen3.8-27B-Uncensored-HauhauCS-Aggressive-BF16.gguf` | 931,146,624 B | `5681b690…2dd142` |
+
+下载后 `sha256sum -c SHA256SUMS.txt` 核验。⚠️ 这是 **llama.cpp 线**的 GGUF 权重；
+vLLM 线（safetensors）权重在另一仓 [qwen38-27b-nvfp4-vllm-p3-thor04](https://www.modelscope.cn/models/navyyang/qwen38-27b-nvfp4-vllm-p3-thor04)，两线勿混。
+
 ## 运行环境
 
 - NVIDIA DRIVE Thor（p3960 / Tegra264 / sm_101a），DriveOS 7.0.3，CUDA 12.8（驱动报 12.8.90）
@@ -32,11 +46,11 @@
 
 | 文件 | 来源 | sha256 |
 |---|---|---|
-| `RadixArk-F8attn-v2.gguf`（主模型，NVFP4 FFN + F8 注意力投影，qwen35 arch） | **内部量化件，未公开发布**；基座 [Qwen/Qwen3.8-27B](https://huggingface.co/Qwen/Qwen3.8-27B)。转换链见 [03-model-conversion](../03-model-conversion/README.md) | `d15dac91…2e7e9` |
-| `Qwen3.8-27B-DFlash2-BF16.gguf`（投机草稿，1.9B） | [z-lab/Qwen3.8-27B-DFlash2](https://huggingface.co/z-lab/Qwen3.8-27B-DFlash2) | `26d47ca2…736bc` |
-| `mmproj-Qwen3.8-27B-Uncensored-HauhauCS-Aggressive-BF16.gguf`（多模态投影） | HuggingFace 作者 HauhauCS | `5681b690…2dd142` |
+| `RadixArk-F8attn-v2.gguf`（主模型，NVFP4 FFN + F8 注意力投影，qwen35 arch） | **已发布** → [ModelScope qwen38-27b-gguf-t4ares-thor01](https://www.modelscope.cn/models/navyyang/qwen38-27b-gguf-t4ares-thor01)（我们的 GGUF 转换件；转换链见 [03-model-conversion](../03-model-conversion/README.md)，转换器不发、GGUF 直接可用）；基座 [Qwen/Qwen3.8-27B](https://huggingface.co/Qwen/Qwen3.8-27B)（Apache 2.0） | `d15dac91…2e7e9` |
+| `Qwen3.8-27B-DFlash2-BF16.gguf`（投机草稿，1.9B） | [z-lab/Qwen3.8-27B-DFlash2](https://huggingface.co/z-lab/Qwen3.8-27B-DFlash2)；我们的 BF16 转换件同在上述 ModelScope 仓 | `26d47ca2…736bc` |
+| `mmproj-Qwen3.8-27B-Uncensored-HauhauCS-Aggressive-BF16.gguf`（多模态投影） | HuggingFace 作者 HauhauCS；镜像同在上述 ModelScope 仓 | `5681b690…2dd142` |
 
-> 复现必须拿到第一件（内部件）；后两件可按链接自行下载并核对 sha。
+> 三件模型已打包发布于 [ModelScope qwen38-27b-gguf-t4ares-thor01](https://www.modelscope.cn/models/navyyang/qwen38-27b-gguf-t4ares-thor01)（含 LICENSE/NOTICE/SHA256SUMS，全链 Apache 2.0），下载后 `sha256sum -c SHA256SUMS.txt` 核验即可。
 
 ## 优化方式（相对上游 llama.cpp 的改动）
 
