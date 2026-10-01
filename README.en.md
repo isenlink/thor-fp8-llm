@@ -7,6 +7,12 @@
 >
 > [中文版本 / Chinese](README.md)
 
+> 📦 **Two stacks**: this page (main) = the **llama.cpp** line; the **vLLM** line for the same
+> board (262144 ctx / 2 concurrent / MTP spec / multimodal, production-final 2026-10-01) lives on the
+> **[`vllm-sm101-replica` branch](https://github.com/isenlink/thor-fp8-llm/tree/vllm-sm101-replica)**,
+> with its binaries (torch + vLLM wheels 732 MB + offline gcc toolchain) on **ModelScope**:
+> <https://www.modelscope.cn/models/navyyang/thor04-vllm-p3-sm101-deploy>
+
 ## Why this repo exists
 
 Community documentation for running local LLMs on a **DRIVE Thor** is essentially
@@ -55,6 +61,10 @@ experiments, and the measured data — to save the next person the same groping.
 ## Repo structure
 
 ### ⚡ Prebuilt binary quick download
+
+**vLLM line (262144 long context / 2 concurrent / MTP / multimodal, production-final 2026-10-01)**
+→ **ModelScope**: <https://www.modelscope.cn/models/navyyang/thor04-vllm-p3-sm101-deploy>
+(torch + vLLM wheels 732 MB + offline gcc toolchain + full SHA256SUMS; docs and patches on the `vllm-sm101-replica` branch)
 
 **Latest production build (2026-10-01, T4/ARES final: 262K + DFlash2 + mmproj, 200K decode 22 t/s / short-prompt 34.8 t/s)**
 → **ModelScope**: <https://www.modelscope.cn/models/navyyang/thor01-qwen38-27b-dflash2-t4ares-deploy>

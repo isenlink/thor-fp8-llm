@@ -9,6 +9,19 @@
 >
 > [English version / 英文版本](README.en.md)
 
+> 📦 **两条部署线 / Two stacks**：本页（main）= **llama.cpp 线**；同板 **vLLM 线**（262144 长上下文 /
+> 2 并发 / MTP 投机 / 多模态，10-01 生产定稿）在
+> **[`vllm-sm101-replica` 分支](https://github.com/isenlink/thor-fp8-llm/tree/vllm-sm101-replica)**，
+> 其二进制（torch + vLLM wheel 732 MB + 离线 gcc 工具链）在
+> **ModelScope**：<https://www.modelscope.cn/models/navyyang/thor04-vllm-p3-sm101-deploy>
+>
+> 📦 **Two stacks**: this page (main) = the **llama.cpp** line; the **vLLM** line for the same
+> board (262144 ctx / 2 concurrent / MTP spec / multimodal, production-final 2026-10-01) lives on the
+> **[`vllm-sm101-replica` branch](https://github.com/isenlink/thor-fp8-llm/tree/vllm-sm101-replica)**,
+> with its binaries (torch + vLLM
+> wheels 732 MB + offline gcc toolchain) on **ModelScope**:
+> <https://www.modelscope.cn/models/navyyang/thor04-vllm-p3-sm101-deploy>
+
 ## Why this repo exists / 为什么有这个仓库
 
 DRIVE Thor 的民间本地 LLM 部署资料几乎为零：官方只提供 DriveOS SDK 视角，
@@ -56,6 +69,10 @@ DRIVE Thor 的民间本地 LLM 部署资料几乎为零：官方只提供 DriveO
 ## Repo structure / 目录结构（整理中）
 
 ### ⚡ 预编译二进制快速下载
+
+**vLLM 线（262144 长上下文 / 2 并发 / MTP / 多模态，10-01 生产定稿）**
+→ **ModelScope**：<https://www.modelscope.cn/models/navyyang/thor04-vllm-p3-sm101-deploy>
+（torch + vLLM wheel 732 MB + 离线 gcc 工具链 + 全件 SHA256SUMS；文档与补丁在 `vllm-sm101-replica` 分支）
 
 **最新生产版（2026-10-01，T4/ARES 定案版：262K + DFlash2 + mmproj，200K decode 22 t/s / 短提示 34.8 t/s）**
 → **ModelScope**：<https://www.modelscope.cn/models/navyyang/thor01-qwen38-27b-dflash2-t4ares-deploy>
