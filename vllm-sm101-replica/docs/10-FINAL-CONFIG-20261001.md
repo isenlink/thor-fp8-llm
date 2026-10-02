@@ -1,9 +1,12 @@
 # 10-01 定稿增量 — Thor04 生产 262K 配置（在 9/27 复现包基础上）
 
-> **One-liner**: production-final config update (2026-10-01) on top of the 9/27 reproduction
-> package: 262144 context / 2 concurrent / MTP+1, 52G hugepage pool, prefix-caching
-> proven non-functional for the GDN architecture (engine forces it off), 150-question
-> acceptance passed with 0 empty answers.
+> **One-liner**: production-final config update (2026-10-01, rev.2 2026-10-02) on top of the
+> 9/27 reproduction package: 262144 context / 2 concurrent / MTP+1, 52G hugepage pool,
+> prefix-caching proven non-functional for the GDN architecture (engine forces it off),
+> 150-question acceptance passed with 0 empty answers.
+> **rev.2 (2026-10-02)**: MTP speculative depth finalized to **1 — depth ≥2 is PROHIBITED**:
+> A/B/C test proved num_speculative_tokens 2 or 3 crash the engine (GPU illegal write)
+> under concurrent load; n=1 verified 30/30 + speed 17.3-17.7 tok/s (faster than n=3).
 
 > **关系**：`vllm-sm101-replica/`（本目录其余部分）= 9/27 复现包（框架怎么装、怎么跑通）；
 > 本文档 = **2026-10-01 Thor04 生产定稿配置**（部署参数最终值 + 实测定案）。
@@ -73,7 +76,7 @@ venv/bin/vllm serve <模型目录> \
 | 池 | 54G | **52G**（26624 页） |
 | max-model-len | 200K | **262144** |
 | max-num-seqs | 未强调 | **2**（262K 长对话并发平衡点） |
-| MTP | 1.7-2.0 MAL 口径 | **num_speculative_tokens=1**（实测 MAL 1.78；板上曾试 n=3：MAL 2.76、三位置接受率 0.758/0.576/0.424，第 3 位衰减至 0.13-0.42——深度是纯权衡旋钮，可自行调） |
+| MTP | 1.7-2.0 MAL 口径 | **num_speculative_tokens=1**（实测 MAL 1.88-1.96、接受率 0.885+、17.3-17.7 t/s）。**🔴 10-02 定案：深度 ≥2 禁用**——n=3 在并发下 3 次崩溃（含 2 次生产自然复现）、n=2 压测复现，均为 GPU 野写（`MMU FAULT invalid pde` → CUDA illegal memory access → EngineDead）；n=1 对照 90/90 + 生产 30/30 全过。曾试 n=3 的 MAL 2.76 读数虽真实，但**并发不安全，勿再启用**（vLLM 0.11.2 + qwen3_next 混合架构，崩溃在请求起步步进，与 KV/池/温度无关） |
 | enforce-eager | 可选 | **定稿保留**（排障期配置；去掉可上 CUDA Graph 但需先验坑 9） |
 | prefix caching | 有 flag | **明确不生效**（见上节，flag 无需写） |
 
@@ -90,3 +93,8 @@ venv/bin/vllm serve <模型目录> \
 ---
 
 **变更记录**：2026-10-01 首版（依据 Thor04 生产定稿通报 + 当日两轮串口实测 + 150 题验收）。
+**rev.2 2026-10-02**：MTP 深度定案 = 1，**≥2 禁用**。三臂实验（n=3 崩×3 / n=2 崩 / n=1 对照 90+30 全过，
+n=1 速度 17.3-17.7 t/s 快于 n=3）——vLLM 0.11.2 + qwen3_next 上 `num_speculative_tokens≥2`
+遇并发请求即 GPU 野写崩溃（dmesg `MMU FAULT invalid pde, virt write` → EngineDead），
+与 KV 占用/池/温度无关；板上生产脚本已回 n=1 并验收。定案报告见仓库外
+`thor-work/thor04-mtp3-crash-abtest-20261002.md`（内部档案）。
