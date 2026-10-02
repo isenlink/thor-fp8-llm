@@ -16,13 +16,13 @@
 
 ```bash
 venv/bin/vllm serve <模型目录> \
-  --served-model-name qwen \
+  --served-model-name qwen3.8-27b \
   --max-model-len 262144 \
   --max-num-seqs 2 \
   --gpu-memory-utilization 0.90 \
   --speculative-config '{"method":"mtp","num_speculative_tokens":1}' \
   --reasoning-parser deepseek_r1 --enforce-eager \
-  --port 8090
+  --port 8080
 ```
 
 **环境前提**（52G 大页池档，与 9/27 包 docs/02-BOARD-PREP.md 流程同源）：

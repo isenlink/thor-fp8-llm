@@ -39,7 +39,7 @@ KNOWN-ISSUES #2). Then:
 ```bash
 WORKSPACE=/opt/vllm-p3 MODEL_DIR=/data/models/p3-text bash scripts/start-serve-text.sh
 # wait for "startup complete" in serve-text.log (~3-5 min)
-curl -s localhost:8998/health   # {"status":"ok"}
+curl -s localhost:8080/health   # {"status":"ok"}
 ```
 
 Expect: KV ~27.95G / 107K tokens / "Maximum concurrency for 200000: 2.14x".

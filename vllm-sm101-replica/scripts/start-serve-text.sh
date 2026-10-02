@@ -12,7 +12,7 @@
 WORKSPACE=${WORKSPACE:-/opt/vllm-p3}          # your venv + scripts dir
 MODEL_DIR=${MODEL_DIR:-/data/models/p3-text}  # model dir (config.json + model.safetensors)
 MTP_DRAFT=${MTP_DRAFT:-/data/models/mtp-draft}
-PORT=${PORT:-8998}
+PORT=${PORT:-8080}
 UTIL=${UTIL:-0.94}
 CTX=${CTX:-200000}
 SEQS=${SEQS:-3}
@@ -28,7 +28,7 @@ setsid env \
   CPATH=$GCC_ROOT/usr/include:$GCC_ROOT/usr/include/aarch64-linux-gnu:$GCC_ROOT/usr/include/python3.12 \
   PATH=$GCC_ROOT/usr/bin:/usr/bin:/bin \
   venv/bin/vllm serve "$MODEL_DIR" \
-    --served-model-name qwen \
+    --served-model-name qwen3.8-27b \
     --max-model-len $CTX \
     --max-num-seqs $SEQS \
     --gpu-memory-utilization $UTIL \
