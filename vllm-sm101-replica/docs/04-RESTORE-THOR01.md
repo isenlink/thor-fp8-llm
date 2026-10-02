@@ -72,7 +72,7 @@ Multimodal add-on: `configs/vl27b-config.json` + `visual-tower.safetensors`
 ## Step 6 — serve
 
 ```bash
-bash scripts/start-serve-text.sh        # port 8998, 54G pool budget
+bash scripts/start-serve-text.sh        # port 8080, 54G pool budget
 # exit conditions (watch log until ALL true):
 #   "attention block size 416" (or 400 for VL)
 #   KV cache tokens ≈ 107,328

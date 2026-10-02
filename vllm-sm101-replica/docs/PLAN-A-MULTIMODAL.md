@@ -183,7 +183,7 @@ venv/bin/vllm serve <board-model-dir> \
    `content='2'` / `reasoning_content='推理过程'` 完美分离，速度无回退（16-19 tok/s）。
 2. **生产口径未定**：8996 首验用 32K；200K 长上下文 + MTP + CG 并发口径需按 `RESTART-PLAN-54G.md`
    重新核算（KV 单价 64KB/token 口径沿用；mamba 状态 ~76MB/请求不变）。
-3. **与文本 serve 共存**：显存独占（util 0.94 已满），27B 文本（8998）与 VL27（8996）不可同时起。
+3. **与文本 serve 共存**：显存独占（util 0.94 已满），27B 文本（8080）与 VL27（8996）不可同时起。
    切换顺序：杀旧（用 pid 文件 + `pkill -9 -f "VLLM::EngineCor[e]"`）→ 起新 → 盯日志到 startup complete。
 4. VL27 未做速度基准；文本主线基准（单流 18.1 / 并发3 41.8 / 200K 双发 2.14x）不受影响。
 5. 若未来升级 vLLM ≥0.30：`Qwen3_5ForConditionalGeneration` 原生支持本架构，
