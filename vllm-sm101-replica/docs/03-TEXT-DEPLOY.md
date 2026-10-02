@@ -45,6 +45,7 @@ MTP_DRAFT, GCC_ROOT), then run it. Success checklist is in
 | --max-num-seqs | 3 | concurrency 3 is the sweet spot on 54G pool |
 | --no-enable-prefix-caching | | qwen3_next asserts with it on; mamba_block_size alignment handles paging |
 | --reasoning-parser | deepseek_r1 | NOT qwen3 — see KNOWN-ISSUES #4 |
+| --enable-auto-tool-choice --tool-call-parser | qwen3_xml | OpenAI Function Calling support (added 2026-10-02 rev.3). **Parser must be `qwen3_xml`** — Qwen3-family models emit tool calls in Qwen3-native XML format; the `hermes` parser only understands JSON-style calls and fails to extract them (raw XML leaks into `message.content`). Requests without a `tools` field are completely unaffected. |
 | --speculative-config | mtp spec=1 | **Keep spec=1. Depth ≥2 is PROHIBITED**: confirmed 2026-10-02, crashes (GPU illegal write) under concurrent load even with `--enforce-eager` — spec=3 crashed 3×, spec=2 1×, spec=1 control 90/90+30/30 clean (KNOWN-ISSUES #2). spec=1 measured 17.3-17.7 tok/s. |
 
 ## Validation matrix (all passing)

@@ -1,12 +1,17 @@
 # 10-01 定稿增量 — Thor04 生产 262K 配置（在 9/27 复现包基础上）
 
-> **One-liner**: production-final config update (2026-10-01, rev.2 2026-10-02) on top of the
+> **One-liner**: production-final config update (2026-10-01, rev.2 2026-10-02, rev.3 2026-10-02) on top of the
 > 9/27 reproduction package: 262144 context / 2 concurrent / MTP+1, 52G hugepage pool,
 > prefix-caching proven non-functional for the GDN architecture (engine forces it off),
 > 150-question acceptance passed with 0 empty answers.
 > **rev.2 (2026-10-02)**: MTP speculative depth finalized to **1 — depth ≥2 is PROHIBITED**:
 > A/B/C test proved num_speculative_tokens 2 or 3 crash the engine (GPU illegal write)
 > under concurrent load; n=1 verified 30/30 + speed 17.3-17.7 tok/s (faster than n=3).
+> **rev.3 (2026-10-02)**: OpenAI Function Calling / tool-call support added:
+> `--enable-auto-tool-choice --tool-call-parser qwen3_xml`. **Parser must be `qwen3_xml`**
+> (Qwen3-family native XML format) — `hermes` parser fails to parse Qwen3 XML tool calls
+> (7 logged errors, raw XML leaks into message content). Requests without `tools` are
+> unaffected; verified structured `tool_calls` returned for both `auto` and `required`.
 
 > **关系**：`vllm-sm101-replica/`（本目录其余部分）= 9/27 复现包（框架怎么装、怎么跑通）；
 > 本文档 = **2026-10-01 Thor04 生产定稿配置**（部署参数最终值 + 实测定案）。
@@ -22,8 +27,15 @@ venv/bin/vllm serve <模型目录> \
   --gpu-memory-utilization 0.90 \
   --speculative-config '{"method":"mtp","num_speculative_tokens":1}' \
   --reasoning-parser deepseek_r1 --enforce-eager \
+  --enable-auto-tool-choice --tool-call-parser qwen3_xml \
   --port 8080
 ```
+
+> **tool-call 参数（rev.3 新增）**：`--enable-auto-tool-choice --tool-call-parser qwen3_xml`
+> 提供 OpenAI Function Calling 支持。**parser 必须选 `qwen3_xml`**——Qwen3 系模型输出的工具调用
+> 是 Qwen3 原生 XML 格式（`<tool_call><function=…><parameter=…>`），社区常见的 `hermes` parser
+> 只认 JSON 格式，实测解析失败（日志 `hermes_tool_parser.py Error in extracting tool call`），
+> XML 原文漏进 `message.content`。不带 `tools` 字段的请求完全不受影响（普通对话路径零变化）。
 
 **环境前提**（52G 大页池档，与 9/27 包 docs/02-BOARD-PREP.md 流程同源）：
 
@@ -98,3 +110,7 @@ n=1 速度 17.3-17.7 t/s 快于 n=3）——vLLM 0.11.2 + qwen3_next 上 `num_sp
 遇并发请求即 GPU 野写崩溃（dmesg `MMU FAULT invalid pde, virt write` → EngineDead），
 与 KV 占用/池/温度无关；板上生产脚本已回 n=1 并验收。定案报告见仓库外
 `thor-work/thor04-mtp3-crash-abtest-20261002.md`（内部档案）。
+**rev.3 2026-10-02**：加 tool-call 支持（`--enable-auto-tool-choice --tool-call-parser qwen3_xml`，
+agent 接入 Function Calling 必备）。实测：第一版 `hermes` parser 对 Qwen3 XML 工具格式解析失败
+（7 条报错、XML 漏进正文，用户侧表现为回复质量异常），换 `qwen3_xml` 后 `auto`/`required` 均正确
+返回结构化 `tool_calls`，普通对话与质量冒烟零变化，health 200。

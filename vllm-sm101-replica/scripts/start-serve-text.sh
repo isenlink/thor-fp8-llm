@@ -8,6 +8,8 @@
 #   - MTP speculative decoding with the transplanted qwen3_next MTP head
 #   - --reasoning-parser deepseek_r1 (NOT qwen3: qwen3 parser requires <think> in output,
 #     but chat template already injects it into the prompt -> split fails)
+#   - --enable-auto-tool-choice --tool-call-parser qwen3_xml (2026-10-02): Function Calling
+#     support; parser MUST be qwen3_xml (Qwen3 XML format) — hermes parser fails on it
 
 WORKSPACE=${WORKSPACE:-/opt/vllm-p3}          # your venv + scripts dir
 MODEL_DIR=${MODEL_DIR:-/data/models/p3-text}  # model dir (config.json + model.safetensors)
@@ -34,6 +36,7 @@ setsid env \
     --gpu-memory-utilization $UTIL \
     --no-enable-prefix-caching \
     --reasoning-parser deepseek_r1 \
+    --enable-auto-tool-choice --tool-call-parser qwen3_xml \
     --speculative-config "{\"method\":\"mtp\",\"num_speculative_tokens\":1,\"model\":\"$MTP_DRAFT\"}" \
     --port $PORT > serve-text.log 2>&1 < /dev/null &
 echo $! > serve.pid

@@ -84,3 +84,20 @@ pool cannot fix arithmetic.
 Killing the APIServer pid leaves `VLLM::EngineCore` holding 48G of GPU memory.
 Kill pattern: `pkill -9 -f "VLLM::EngineCor[e]"` (bracket trick avoids self-match).
 Always verify with nvidia-smi / free before restarting.
+
+## 10. Tool-call parser: use qwen3_xml, NOT hermes (GOTCHA, 2026-10-02)
+
+For OpenAI Function Calling you must add
+`--enable-auto-tool-choice --tool-call-parser qwen3_xml`.
+
+**`hermes` is the wrong parser for Qwen3-family models.** The model emits tool
+calls in Qwen3-native XML format (`<tool_call><function=…><parameter=…>`),
+while the hermes parser only extracts JSON-style calls. Observed failure mode:
+request returns HTTP 200 with `tool_calls: []` and the raw XML dumped into
+`message.content` — plus repeated `hermes_tool_parser.py: Error in extracting
+tool call from response` tracebacks in the serve log. Downstream agents see
+"garbage replies" and blame the model.
+
+With `qwen3_xml`: structured `tool_calls` returned correctly for both
+`tool_choice: "auto"` and `"required"`; plain (no-tools) requests and quality
+are completely unaffected.
