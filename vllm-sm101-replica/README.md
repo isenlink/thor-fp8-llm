@@ -79,11 +79,12 @@ MANIFEST.txt                 file list of the full distribution tarball (incl. b
 
 | Asset | Source | Size |
 |---|---|---|
-| Qwen3.8-27B NVFP4-HF (text tower) | HuggingFace | ~22G |
-| Vision tower (333 tensors, BF16) | extracted from the same checkpoint — `patches/extract-visual-tower.py` | 879MiB |
-| MTP draft head | included in checkpoint or separate | ~850M |
+| Qwen3.8-27B NVFP4-HF (text tower) + MTP draft head + configs | **ModelScope: [qwen38-27b-nvfp4-vllm-p3-thor04](https://www.modelscope.cn/models/navyyang/qwen38-27b-nvfp4-vllm-p3-thor04)** — production pair as deployed, ready to serve, no conversion | 23.8G + 849M |
+| Vision tower (333 tensors, BF16) — multimodal only | extracted from the same checkpoint — `patches/extract-visual-tower.py` | 879MiB |
 
-Weights are NOT redistributed here. Scripts assume HF-format safetensors.
+Weights for the **text line are redistributed on ModelScope** (Apache-2.0,
+provenance in `NOTICE.md`, `sha256sum -c SHA256SUMS.txt`). Scripts assume
+HF-format safetensors.
 
 ## License / attribution
 
