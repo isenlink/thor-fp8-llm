@@ -12,12 +12,31 @@ Suspected: GDN state handling cost at depth / mamba page alignment. Untested fix
 larger `--max-num-batched-tokens`, decode-side chunking, or a newer vLLM with
 hybrid KV improvements. **If you solve this, please publish.**
 
-## 2. spec=2+ MTP with CUDA graphs crashes (PATCHED AROUND)
+## 2. spec≥2 MTP crashes under concurrency — depth ≥2 is PROHIBITED (CONFIRMED 2026-10-02)
 
-`num_speculative_tokens >= 2` + concurrent requests → illegal memory access in
-rejection sampler. Production config uses spec=1 (verified stable).
-Fix attempt `patches/fix-cudagraph-concurrency-pad.py` addresses the CG padding
-half; the sampler half is untouched.
+**Update (2026-10-02, three-arm A/B/C test): this is NOT limited to CUDA-graph mode
+and NOT fixed by `--enforce-eager`.** `num_speculative_tokens >= 2` + concurrent
+requests crashes the engine with a GPU illegal write:
+
+- dmesg: `[MMU FAULT] fault type: invalid pde, access type: virt write` →
+  `CUDA error: an illegal memory access` → `EngineDeadError` → all in-flight
+  requests fail with HTTP 500.
+- Reproduced 3× with spec=3 (2 production crashes + 1 stress-test), 1× with
+  spec=2 (stress-test). Identical signature every time.
+- Control arm spec=1, identical workload (78–97 tok prompts, max_tokens=800,
+  temp=0, 1 serial + 2 concurrent per round): **90/90 clean**, then a
+  production-config verification run **30/30 clean**.
+- Crash happens at request-startup stepping (step_counter=0, KV usage <3%) —
+  single slow requests never crash it (a full 150-question suite ran fine in
+  one day). Concurrent / rapid back-to-back requests trigger it.
+
+**Recommendation: keep `num_speculative_tokens=1`.** It is also faster than
+expected: 17.3–17.7 tok/s single-stream (wall clock) with 88.5% draft acceptance —
+no reason to go deeper. Earlier spec=3 readings (MAL 2.76) were real but the
+depth is not concurrency-safe on vLLM 0.11.2 + qwen3_next.
+
+Fix attempt `patches/fix-cudagraph-concurrency-pad.py` addresses the CUDA-graph
+padding half only; the sampler half is untouched and eager mode does not help.
 
 ## 3. Multimodal KV budget (CONSTRAINT, not bug)
 

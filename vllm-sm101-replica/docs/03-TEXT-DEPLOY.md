@@ -45,7 +45,7 @@ MTP_DRAFT, GCC_ROOT), then run it. Success checklist is in
 | --max-num-seqs | 3 | concurrency 3 is the sweet spot on 54G pool |
 | --no-enable-prefix-caching | | qwen3_next asserts with it on; mamba_block_size alignment handles paging |
 | --reasoning-parser | deepseek_r1 | NOT qwen3 — see KNOWN-ISSUES #4 |
-| --speculative-config | mtp spec=1 | spec≥2 + CG concurrency crashes (KNOWN-ISSUES #2) |
+| --speculative-config | mtp spec=1 | **Keep spec=1. Depth ≥2 is PROHIBITED**: confirmed 2026-10-02, crashes (GPU illegal write) under concurrent load even with `--enforce-eager` — spec=3 crashed 3×, spec=2 1×, spec=1 control 90/90+30/30 clean (KNOWN-ISSUES #2). spec=1 measured 17.3-17.7 tok/s. |
 
 ## Validation matrix (all passing)
 

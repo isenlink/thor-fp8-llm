@@ -32,7 +32,9 @@ Follow `02-BOARD-PREP.md`. In short:
 ## 3. Text-only serve
 
 Follow `03-TEXT-DEPLOY.md` (model dir layout, weight surgery for MTP head,
-config). Then:
+config). ⚠️ **MTP depth must be 1** — `num_speculative_tokens ≥ 2` crashes under
+concurrent load on vLLM 0.11.2 + qwen3_next (confirmed 2026-10-02, see
+KNOWN-ISSUES #2). Then:
 
 ```bash
 WORKSPACE=/opt/vllm-p3 MODEL_DIR=/data/models/p3-text bash scripts/start-serve-text.sh

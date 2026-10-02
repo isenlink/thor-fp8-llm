@@ -21,7 +21,9 @@ unified-memory board with no discrete VRAM. Includes:
 - **Multimodal serve** — Qwen3VL vision tower grafted onto the Qwen3-Next text tower
   (this architecture doesn't exist upstream in vLLM 0.11.2; we built it, see
   `docs/PLAN-A-MULTIMODAL.md`)
-- **MTP speculative decoding** — 1.7–2.0 mean acceptance length
+- **MTP speculative decoding** — 1.7–2.0 mean acceptance length. ⚠️ **Depth must stay
+  at 1**: spec ≥2 crashes under concurrent load (confirmed 2026-10-02, see
+  `docs/KNOWN-ISSUES.md` #2)
 - **Complete pitfall list** — 13 documented crash points with exact fixes
 
 ## Benchmark summary (measured, reproducible)
@@ -55,8 +57,9 @@ docs/
   PLAN-A-MULTIMODAL.md       ★ the vision-tower graft: architecture, 13 pitfalls, fixes
   KNOWN-ISSUES.md            what's broken / open, with reproduction cases
   BENCHMARKS.md              full methodology + numbers, so you can compare fairly
-  10-FINAL-CONFIG-20261001.md ★ 2026-10-01 production-final config: 262144 ctx,
-                             2 concurrent, MTP+1, 52G pool, prefix-caching proven
+  10-FINAL-CONFIG-20261001.md ★ 2026-10-01 production-final config (rev.2 2026-10-02): 262144 ctx,
+                             2 concurrent, MTP depth 1 (≥2 PROHIBITED — crashes under
+                             concurrency), 52G pool, prefix-caching proven
                              non-functional for GDN, 150-question acceptance data
 build/                       cross-compile host scripts (paths are placeholders — set your own)
 patches/                     every source modification, named by purpose
