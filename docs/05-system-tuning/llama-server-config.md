@@ -87,8 +87,25 @@ KV 每 token ≈ 0.078 MB     (40 层, 16 attn heads, 2 KV heads, head_dim 256, 
 | 32K | 23.6 GB | ~23 GB | ✅ 宽裕 |
 | 64K | 26.1 GB | ~20 GB | ✅ 可行 |
 | 128K | 31.1 GB | ~15 GB | ✅ 可行 |
+| 256K | 41.1 GB | ~5 GB | ⚠️ 实测可行但贴线（见下注） |
+
+> **256K 实测注记（2026-10-07）**：50G 池 + 27B NVFP4 全家桶（主模型 + DFlash2 draft）在
+> `-c 262144` 下实测稳定服务（四模型同档横比全部跑通，吞吐见
+> [thor03-4model-256k-bench-2026-10-07.md](../06-benchmarks/thor03-4model-256k-bench-2026-10-07.md)）。
+> 两个前置条件：①池 50G 起（46G 池时代"128K 可行"的表按 46G 账，50G 池下上表余量还要各 +2G）；
+> **②大 ctx 大模型必须从接近全空的池启动**——warmup 首次矩阵乘的峰值显存 > 稳态账面，
+> 实测池剩 22854 页（45G）时拉起直接 CUDA OOM，全空一次成功。
 
 **KV 缓存量化（`--cache-type-k q8_0`）实测无收益**——该模型 KV 本身就小，q8_0 反而损失约 1.1% 吞吐（692.22 vs 694.72 t/s @ 16K）。不值得开。
+
+### ★ 长跑必带：`--cache-ram N`（prompt cache 宿主上限）
+
+llama-server 的 **prompt cache 默认 8192 MiB 宿主 RAM**，每来一条新 prompt 就在宿主存一份
+状态快照——**持续换新 prompt 的服务会无上限吃宿主内存**，直到把板子逼进 swap 甚至 OOM
+（实测案例：常驻实例四轮压测后 swap 涨到 4.5 GB、MemAvailable 贴地 0.8 GB）。
+**常驻服务必须显式 `--cache-ram 512`**（512 MiB 对会话复用足够，宿主占用即刻封顶；
+实测补上后 swap 4.5 GB → 0.2 GB 回落）。剂量-反应实验与机制分析见
+[runtime-memory-growth-2026-09-16.md](runtime-memory-growth-2026-09-16.md)。
 
 ## 五、thinking 模型的采样注意点
 

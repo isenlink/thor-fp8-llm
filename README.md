@@ -50,6 +50,7 @@ DRIVE Thor 的民间本地 LLM 部署资料几乎为零：官方只提供 DriveO
 | Qwen3-4B Q4_K_M 基准 | pp128 1516 tok/s / tg64 40.2 tok/s（ngl=99 全 GPU） |
 | Qwen3.8-27B NVFP4 | decode **26.48 tok/s**（超社区 25.89 目标），accuracy 85.9% |
 | **生产模型精度回归（35 题程序判分）** | uncensored NVFP4-mixed 34/35 → **官方基座 Unsloth-NVFP4-Q8 35/35**（跳步算术题修复；速度 −15% 换精度，26.2 t/s）→ [详见](docs/06-benchmarks/thor04-model-switch-unsloth-nvfp4q8-2026-09-18.md) |
+| **10-07 四模型 256K 同档横比** | 同板同二进制同口径（256K+DFlash2+temp0.2+KV f16）四变体横比：**uncensored HF 版 20.25 t/s 最快** > HIGH 18.58 > ollama 打包版 17.12 > **官方基座 Q8 15.44 垫底**——精度优先换 Q8 在 256K 档代价放大到 −24%；**同模型不同打包（HF vs ollama）实测差 18%**；⚠️ Q8 历史数字 26.2 为 temp=0 短 prompt 口径，不可与本表直比 → [详见](docs/06-benchmarks/thor03-4model-256k-bench-2026-10-07.md) |
 | 128K 长上下文 decode | 16.4±0.7 tok/s（生产基线，MTP K7 + F8 attn + NVFP4 MLP） |
 | B3 kernel 优化（standalone） | NVFP4 MMVQ gemv 144→207 GB/s（+44%），根因 = y 向量重复 L2 读取（见 04 目录） |
 | B3 定案（perj 修复 + MTP K12 p0.5） | 2K decode **31.02 tok/s**（+20.6%）、128K decode **19.61 tok/s**（+16.2%），输出与基线逐字一致（见 04 目录 b3-final-results） |
