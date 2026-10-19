@@ -121,8 +121,30 @@ bash -n $PERSIST_DIR/restore_overlay.sh
 
 **AI 必须确认：**
 - [ ] `LOG=` 指向持久分区（不是 `/var/log`、不是 `/tmp`）
+- [ ] `PERSIST_DIR=` 是持久分区挂载点（不是 overlay 分区）
 - [ ] `NIC=` 是 A0 里 `ip -br addr` 看到的真实网卡名
 - [ ] `USERS=` 里的账号在 A0 的 `getent passwd` 里确实存在过（或确实希望创建）
+- [ ] **`$PERSIST_DIR/account_backup/passwords.txt` 已创建**（★ 漏了这条，账号建出来但没有密码）
+
+### A3.1 · 建凭据文件（★ 最容易漏的一步）
+
+```bash
+# 板上执行；格式 用户名:密码，每行一条
+sudo mkdir -p $PERSIST_DIR/account_backup
+sudo chmod 700 $PERSIST_DIR/account_backup
+
+# ★ 用 stdin 传，别让密码进命令行（会留在 history / ps）
+printf 'userA:PassA\nuserB:PassB\n' | sudo tee $PERSIST_DIR/account_backup/passwords.txt >/dev/null
+sudo chmod 600 $PERSIST_DIR/account_backup/passwords.txt
+
+# 确认
+sudo wc -l $PERSIST_DIR/account_backup/passwords.txt   # 应为账号数
+sudo ls -l $PERSIST_DIR/account_backup/passwords.txt   # 应为 -rw------- root root
+```
+
+**为什么必须做：** 恢复脚本里"设密码"那段是 `if [ -f 文件 ]` 包着的。
+文件不存在时整段静默跳过 —— 账号建了、sudo 免密也配了、`sudo -n` 能过，
+**但密码为空，SSH 密码登录失败**。所有表面指标都是绿的，极难发现。
 
 ---
 
@@ -204,6 +226,10 @@ ping -c 3 <网关>
 id $CHECK_USER
 sudo -n -u $CHECK_USER sudo -n true && echo "免密 OK"
 
+# ④b ★ 密码是否真的存在（sudo 免密通 ≠ 有密码，这是两件事）
+sudo awk -F: '$1=="'"$CHECK_USER"'"{print $1"="(($2==""||$2=="!")?"NOPW ← 密码没恢复":"OK")}' /etc/shadow
+# 期望：USER=OK    若为 NOPW → 查 $PERSIST_DIR/account_backup/passwords.txt 是否存在
+
 # ⑤ 模型服务（如果配了）
 systemctl is-active $LLAMA_UNIT
 ss -lnt | grep $LLAMA_PORT
@@ -232,6 +258,7 @@ curl -s -X POST http://127.0.0.1:$LLAMA_PORT/v1/chat/completions \
 | 钩子跑了但网络没恢复 | 出厂静态 IP 配置没被改到 | `grep -H '^Address=' /etc/systemd/network/*.network` |
 | 网络恢复后断连 | `ip link set down` 把链路关了 | 检查脚本里没有 `down`，只有 `flush` |
 | 恢复脚本"成功"但登不进去 | sudoers 语法坏了 | `visudo -cf /etc/sudoers.d/*` |
+| `sudo -n` 通但 SSH 密码登录失败 | **凭据文件不存在，密码段被静默跳过** | `ls -l $PERSIST_DIR/account_backup/passwords.txt`；查 `/etc/shadow` 字段是否为 `!` |
 | 模型服务起不来 | 单元文件没装回 / cgroup 被清理 | `systemctl status`；确认是 systemd 托管不是 nohup |
 | 日志是空的 | `exec >>` 路径不在持久分区 | 检查 launcher 第一行 |
 | 串口被输出淹没 | launcher 没做重定向 | 确认第一行是 `exec >> ...` |

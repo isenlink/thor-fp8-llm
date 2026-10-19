@@ -27,6 +27,10 @@ set -u
 # ║                          参 数 区（必须改）                            ║
 # ╚═══════════════════════════════════════════════════════════════════════╝
 
+# ★ 持久分区挂载点（断电不丢的分区；overlay 分区绝不能填这里）
+#   探测方法见 discover_vendor_hook.sh，或 lsblk 看哪个分区断电后内容还在
+PERSIST_DIR="/persist"
+
 # ── 网络 ────────────────────────────────────────────────────────────────
 NIC="enx000000000000"            # 网卡名：ip -br link 查看
 NET_MODE="dhcp"                  # "dhcp" 或 "static"
@@ -39,8 +43,13 @@ VEHICLE_NIC_PREFIX="mgbe"
 
 # ── 账号（缺才建，幂等）──────────────────────────────────────────────────
 USERS="user"                     # 空格分隔；每个都会建 + 加 sudo + 免密
-USER_PASSWORD_HASH=""            # 可选：openssl passwd -6 'yourpass' 的结果
-                                 # 留空则只建账号不设密码（首次用 sudo passwd 设）
+# 密码来源：$PERSIST_DIR/account_backup/passwords.txt
+#   格式：每行 "用户名:密码"（明文，文件权限由脚本设为 600）
+#   ★ 必须先建好这个文件，否则账号建出来但没有密码（脚本会告警）
+#   建立方法：
+#     sudo mkdir -p /persist/account_backup && sudo chmod 700 /persist/account_backup
+#     printf 'user:YourPass\n' | sudo tee /persist/account_backup/passwords.txt >/dev/null
+#     sudo chmod 600 /persist/account_backup/passwords.txt
 
 # ── 大页池（可选，不需要就设 0）─────────────────────────────────────────
 HUGEPAGES=0                      # 0 = 跳过
@@ -212,6 +221,10 @@ echo "  NTP: $(timedatectl show -p NTPSynchronized --value 2>/dev/null || echo u
 # ═══════════════════════════════════════════════════════════════════════
 echo ""
 echo "───── ④ 账号 ─────"
+
+# 凭据文件：每行 用户名:密码，放持久分区
+PWFILE="$PERSIST_DIR/account_backup/passwords.txt"
+
 for u in $USERS; do
     if ! id "$u" >/dev/null 2>&1; then
         useradd -m -s /bin/bash "$u" 2>/dev/null && echo "  已建 $u" || fail "账号-$u" "创建失败"
@@ -228,10 +241,40 @@ for u in $USERS; do
         mkdir -p "/home/$u" && chown "$u:$u" "/home/$u" && chmod 750 "/home/$u" \
             && echo "  补建家目录 /home/$u"
     fi
-    # 可选：设初始密码
-    if [ -n "$USER_PASSWORD_HASH" ]; then
-        usermod -p "$USER_PASSWORD_HASH" "$u" 2>/dev/null
-    fi
+done
+
+# ★ 密码：文件缺失必须报警，不能静默跳过
+#   （静默跳过是本方案最隐蔽的失败形态：sudo -n 能过，看起来账号好了，
+#     实际密码为空，SSH 密码登录失败）
+if [ -f "$PWFILE" ]; then
+    PW_OK=0; PW_FAIL=0
+    while IFS=: read -r u p; do
+        [ -z "$u" ] && continue
+        case "$u" in \#*) continue ;; esac
+        if printf '%s:%s\n' "$u" "$p" | chpasswd 2>/dev/null; then
+            echo "  密码已设: $u"
+            PW_OK=$((PW_OK+1))
+        else
+            fail "密码-$u" "chpasswd 失败"
+            PW_FAIL=$((PW_FAIL+1))
+        fi
+    done < "$PWFILE"
+    echo "  密码设置结果: 成功 $PW_OK 个，失败 $PW_FAIL 个"
+else
+    # 不算硬失败（可能本来就不用密码），但必须显式告警
+    echo "  ⚠️  凭据文件缺失: $PWFILE"
+    echo "      账号已建但无密码 —— SSH 密码登录会失败（密钥/串口仍可用）"
+    echo "      修复：mkdir -p $(dirname "$PWFILE") && 写入 '用户名:密码' 每行一条，chmod 600"
+fi
+
+# ★ 收紧权限：凭据文件含明文密码
+[ -f "$PWFILE" ] && chmod 600 "$PWFILE" 2>/dev/null
+
+# ★ 自检：明确报告是否有可用密码（不要只看 sudo 能过就以为好了）
+echo "  ── 密码状态自检 ──"
+for u in $USERS; do
+    st=$(awk -F: -v u="$u" '$1==u{print ($2==""||$2=="!"||$2=="*")?"NOPW":"OK"}' /etc/shadow 2>/dev/null)
+    echo "     $u = ${st:-未找到}"
 done
 
 # ═══════════════════════════════════════════════════════════════════════

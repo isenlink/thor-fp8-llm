@@ -140,6 +140,90 @@ for u in USER_A USER_B; do
 done
 ```
 
+### ⚠️ 最隐蔽的坑：密码文件不存在时静默跳过
+
+很多人（包括我们第一版）会把设密码写成这样：
+
+```bash
+if [ -f /persist/account_backup/passwords.txt ]; then
+    while IFS=: read -r u p; do
+        echo "$u:$p" | chpasswd && echo "[4] 密码已设: $u"
+    done < /persist/account_backup/passwords.txt
+fi
+```
+
+**逻辑完全正确，但它有一个致命特性：文件不存在时，整段直接跳过，不报错、不告警。**
+
+表现是：
+
+- 恢复脚本输出 `RESTORE_ALL_OK`，一切看起来正常
+- 账号建出来了、sudo 免密也配了、能 `sudo -n` 免密提权
+- **但账号没有密码 → SSH 密码登录失败，只能靠密钥或串口进去**
+
+而且因为 `sudo -n` 能过，很容易误判成"账号恢复成功"。
+
+#### 必须做的三件事
+
+**1. 凭据文件必须提前建好，且放持久分区**
+
+```bash
+# 格式：每行 用户名:密码
+sudo mkdir -p /persist/account_backup
+sudo chmod 700 /persist/account_backup
+# 写入时用 stdin，别让密码进命令行（会留在 shell history / ps 输出里）
+printf '%s\n' "$PAYLOAD" | sudo tee /persist/account_backup/passwords.txt >/dev/null
+sudo chmod 600 /persist/account_backup/passwords.txt
+```
+
+**2. 文件缺失时报警，而不是静默跳过**
+
+```bash
+PWFILE="/persist/account_backup/passwords.txt"
+if [ -f "$PWFILE" ]; then
+    while IFS=: read -r u p; do
+        [ -z "$u" ] && continue
+        printf '%s:%s\n' "$u" "$p" | chpasswd 2>/dev/null \
+            && echo "[4] 密码已设: $u" \
+            || echo "[4] ✗ 密码设置失败: $u"
+    done < "$PWFILE"
+else
+    echo "[4] ⚠️ 凭据文件缺失: $PWFILE —— 账号已建但无密码，SSH 密码登录会失败"
+fi
+```
+
+**3. 验收时必须真的测一次密码登录**
+
+不要只看 `sudo -n whoami` 通了就认为账号好了 —— 那验证的是 sudoers，不是密码。
+
+```bash
+# 用密码真的登一次（在板外执行）
+sshpass -p "$PASS" ssh "$USER@$BOARD" 'whoami'
+#   返回用户名 → 密码 OK
+#   Permission denied → 密码没设上
+```
+
+或者板上直接查 shadow 字段：
+
+```bash
+# 空 / ! / * 都代表无可用密码
+sudo awk -F: '$1=="USER_A"||$1=="USER_B"{print $1"="(($2==""||$2=="!")?"NOPW":"OK")}' /etc/shadow
+# 期望输出：USER_A=OK  USER_B=OK
+```
+
+#### 我们的实测记录
+
+| 轮次 | 密码状态 | 说明 |
+|---|---|---|
+| 初始 | `USER_A`/`USER_B` 均 `!`（锁定） | 板上预置账号，出厂无密码 |
+| 修后 | 两账号 `OK` + `sudo -n → root` | 设密码 + 已有免密 sudo |
+| 模拟验证 | 先 `usermod -p '!'` 锁死，再跑恢复 | 脚本把密码设回来了 → 逻辑正确 |
+| **真断电** | 钩子报 `[sudoers缺失][非DHCP][无IP]` | overlay 真被吞 |
+| **真断电后** | `USER_A=OK  USER_B=OK` | **凭据文件生效，密码自动恢复成功** |
+
+**关键教训**：第一版恢复脚本里这段代码一直都在，但 `/persist/account_backup/passwords.txt`
+从未被创建。所以"密码恢复"这个功能**写了但从未生效**，直到发现并补上文件才真正工作。
+如果不是专门去验证 shadow 字段，这个漏洞会一直潜伏 —— 因为所有表面指标都是绿的。
+
 ---
 
 ## 5. 网络：最容易失败的一步
