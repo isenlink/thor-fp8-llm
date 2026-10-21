@@ -1,0 +1,1140 @@
+{
+  "batch4-c2-8k": {
+    "base": "http://127.0.0.1:8081",
+    "model": "qwen3.8-27b",
+    "concurrency_submitted": 2,
+    "input_each": 8192,
+    "output_each": 512,
+    "wall_s": 32.53888560199994,
+    "aggregate_output_tokens_per_wall_s": 31.470039033453006,
+    "results": [
+      {
+        "usage": {
+          "prompt_tokens": 8192,
+          "total_tokens": 8704,
+          "completion_tokens": 512
+        },
+        "input_tokens": 8192,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 8.390997080998204,
+        "decode_tokens_per_s": 21.166621413733996,
+        "prefill_effective_tokens_per_s": 976.2844535545314,
+        "total_s": 32.53301998700044
+      },
+      {
+        "usage": {
+          "prompt_tokens": 8192,
+          "total_tokens": 8704,
+          "completion_tokens": 512
+        },
+        "input_tokens": 8192,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 11.837000863997673,
+        "decode_tokens_per_s": 25.060345721996256,
+        "prefill_effective_tokens_per_s": 692.0671962537427,
+        "total_s": 32.22803508299694
+      }
+    ],
+    "note": "cold unique cache_salt; per-request decode excludes prefill; aggregate includes prefill; verify running/queued separately"
+  },
+  "batch4-c4-8k": {
+    "base": "http://127.0.0.1:8081",
+    "model": "qwen3.8-27b",
+    "concurrency_submitted": 4,
+    "input_each": 8192,
+    "output_each": 512,
+    "wall_s": 50.672292731003836,
+    "aggregate_output_tokens_per_wall_s": 40.416564746179944,
+    "results": [
+      {
+        "usage": {
+          "prompt_tokens": 8192,
+          "total_tokens": 8704,
+          "completion_tokens": 512
+        },
+        "input_tokens": 8192,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 8.125482226001623,
+        "decode_tokens_per_s": 14.70647770542354,
+        "prefill_effective_tokens_per_s": 1008.1863170884209,
+        "total_s": 42.87229614699754
+      },
+      {
+        "usage": {
+          "prompt_tokens": 8192,
+          "total_tokens": 8704,
+          "completion_tokens": 512
+        },
+        "input_tokens": 8192,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 13.153506169001048,
+        "decode_tokens_per_s": 15.3266933183339,
+        "prefill_effective_tokens_per_s": 622.7997231115563,
+        "total_s": 46.494198433996644
+      },
+      {
+        "usage": {
+          "prompt_tokens": 8192,
+          "total_tokens": 8704,
+          "completion_tokens": 512
+        },
+        "input_tokens": 8192,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 19.475227053997514,
+        "decode_tokens_per_s": 16.38420975255532,
+        "prefill_effective_tokens_per_s": 420.63694442620107,
+        "total_s": 50.66408012899774
+      },
+      {
+        "usage": {
+          "prompt_tokens": 8192,
+          "total_tokens": 8704,
+          "completion_tokens": 512
+        },
+        "input_tokens": 8192,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 23.655240054999013,
+        "decode_tokens_per_s": 20.794651342142387,
+        "prefill_effective_tokens_per_s": 346.30804764413296,
+        "total_s": 48.229016235003655
+      }
+    ],
+    "note": "cold unique cache_salt; per-request decode excludes prefill; aggregate includes prefill; verify running/queued separately"
+  },
+  "eager-100k": {
+    "base": "http://127.0.0.1:8081",
+    "model": "qwen3.8-27b",
+    "concurrency_submitted": 1,
+    "input_each": 102400,
+    "output_each": 512,
+    "wall_s": 176.32563112999924,
+    "aggregate_output_tokens_per_wall_s": 2.903718516240664,
+    "results": [
+      {
+        "usage": {
+          "prompt_tokens": 102400,
+          "total_tokens": 102912,
+          "completion_tokens": 512
+        },
+        "input_tokens": 102400,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 136.55999746399903,
+        "decode_tokens_per_s": 12.85225033833143,
+        "prefill_effective_tokens_per_s": 749.8535581548723,
+        "total_s": 176.31972703299834
+      }
+    ],
+    "note": "cold unique cache_salt; per-request decode excludes prefill; aggregate includes prefill; verify running/queued separately"
+  },
+  "eager-8k-a": {
+    "base": "http://127.0.0.1:8081",
+    "model": "qwen3.8-27b",
+    "concurrency_submitted": 1,
+    "input_each": 8192,
+    "output_each": 512,
+    "wall_s": 35.79689185100142,
+    "aggregate_output_tokens_per_wall_s": 14.302917754175821,
+    "results": [
+      {
+        "usage": {
+          "prompt_tokens": 8192,
+          "total_tokens": 8704,
+          "completion_tokens": 512
+        },
+        "input_tokens": 8192,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 15.473400842995034,
+        "decode_tokens_per_s": 25.152558751041873,
+        "prefill_effective_tokens_per_s": 529.4246612701565,
+        "total_s": 35.78974660599488
+      }
+    ],
+    "note": "cold unique cache_salt; per-request decode excludes prefill; aggregate includes prefill; verify running/queued separately"
+  },
+  "eager-8k-b": {
+    "base": "http://127.0.0.1:8081",
+    "model": "qwen3.8-27b",
+    "concurrency_submitted": 1,
+    "input_each": 8192,
+    "output_each": 512,
+    "wall_s": 26.00464387199463,
+    "aggregate_output_tokens_per_wall_s": 19.688791068251923,
+    "results": [
+      {
+        "usage": {
+          "prompt_tokens": 8192,
+          "total_tokens": 8704,
+          "completion_tokens": 512
+        },
+        "input_tokens": 8192,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 5.626930011996592,
+        "decode_tokens_per_s": 25.084139005862095,
+        "prefill_effective_tokens_per_s": 1455.8560320698302,
+        "total_s": 25.998770131001947
+      }
+    ],
+    "note": "cold unique cache_salt; per-request decode excludes prefill; aggregate includes prefill; verify running/queued separately"
+  },
+  "final2-100k": {
+    "base": "http://127.0.0.1:8081",
+    "model": "qwen3.8-27b",
+    "concurrency_submitted": 1,
+    "input_each": 102400,
+    "output_each": 512,
+    "wall_s": 173.1769465499965,
+    "aggregate_output_tokens_per_wall_s": 2.956513613387823,
+    "results": [
+      {
+        "usage": {
+          "prompt_tokens": 102400,
+          "total_tokens": 102912,
+          "completion_tokens": 512
+        },
+        "input_tokens": 102400,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 139.17701279799803,
+        "decode_tokens_per_s": 15.03223129224383,
+        "prefill_effective_tokens_per_s": 735.7536847598798,
+        "total_s": 173.17090812699462
+      }
+    ],
+    "note": "cold unique cache_salt; per-request decode excludes prefill; aggregate includes prefill; verify running/queued separately"
+  },
+  "final2-8k-a": {
+    "base": "http://127.0.0.1:8081",
+    "model": "qwen3.8-27b",
+    "concurrency_submitted": 1,
+    "input_each": 8192,
+    "output_each": 512,
+    "wall_s": 23.93239105399698,
+    "aggregate_output_tokens_per_wall_s": 21.393599947652962,
+    "results": [
+      {
+        "usage": {
+          "prompt_tokens": 8192,
+          "total_tokens": 8704,
+          "completion_tokens": 512
+        },
+        "input_tokens": 8192,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 5.711824877012987,
+        "decode_tokens_per_s": 28.054996651140694,
+        "prefill_effective_tokens_per_s": 1434.2176408398618,
+        "total_s": 23.926399714007857
+      }
+    ],
+    "note": "cold unique cache_salt; per-request decode excludes prefill; aggregate includes prefill; verify running/queued separately"
+  },
+  "final2-8k-b": {
+    "base": "http://127.0.0.1:8081",
+    "model": "qwen3.8-27b",
+    "concurrency_submitted": 1,
+    "input_each": 8192,
+    "output_each": 512,
+    "wall_s": 23.909156099995016,
+    "aggregate_output_tokens_per_wall_s": 21.41439028038747,
+    "results": [
+      {
+        "usage": {
+          "prompt_tokens": 8192,
+          "total_tokens": 8704,
+          "completion_tokens": 512
+        },
+        "input_tokens": 8192,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 5.682071500996244,
+        "decode_tokens_per_s": 28.044631121852728,
+        "prefill_effective_tokens_per_s": 1441.7277217584622,
+        "total_s": 23.903302495993557
+      }
+    ],
+    "note": "cold unique cache_salt; per-request decode excludes prefill; aggregate includes prefill; verify running/queued separately"
+  },
+  "final2-c2-100k": {
+    "base": "http://127.0.0.1:8081",
+    "model": "qwen3.8-27b",
+    "concurrency_submitted": 2,
+    "input_each": 102400,
+    "output_each": 512,
+    "wall_s": 322.030536086997,
+    "aggregate_output_tokens_per_wall_s": 3.179822672851636,
+    "results": [
+      {
+        "usage": {
+          "prompt_tokens": 102400,
+          "total_tokens": 102912,
+          "completion_tokens": 512
+        },
+        "input_tokens": 102400,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 141.39460377499927,
+        "decode_tokens_per_s": 3.0669303697479213,
+        "prefill_effective_tokens_per_s": 724.2143424578547,
+        "total_s": 308.01093496500107
+      },
+      {
+        "usage": {
+          "prompt_tokens": 102400,
+          "total_tokens": 102912,
+          "completion_tokens": 512
+        },
+        "input_tokens": 102400,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 286.9786603899993,
+        "decode_tokens_per_s": 14.583256606009263,
+        "prefill_effective_tokens_per_s": 356.82095616740315,
+        "total_s": 322.0189961069991
+      }
+    ],
+    "note": "cold unique cache_salt; per-request decode excludes prefill; aggregate includes prefill; verify running/queued separately"
+  },
+  "fullgraph4-c2-8k": {
+    "base": "http://127.0.0.1:8081",
+    "model": "qwen3.8-27b",
+    "concurrency_submitted": 2,
+    "input_each": 8192,
+    "output_each": 512,
+    "wall_s": 32.459957391998614,
+    "aggregate_output_tokens_per_wall_s": 31.54656020135184,
+    "results": [
+      {
+        "usage": {
+          "prompt_tokens": 8192,
+          "total_tokens": 8704,
+          "completion_tokens": 512
+        },
+        "input_tokens": 8192,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 8.40868695500103,
+        "decode_tokens_per_s": 21.252659429290294,
+        "prefill_effective_tokens_per_s": 974.2305836617979,
+        "total_s": 32.45299362699734
+      },
+      {
+        "usage": {
+          "prompt_tokens": 8192,
+          "total_tokens": 8704,
+          "completion_tokens": 512
+        },
+        "input_tokens": 8192,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 11.85943472499639,
+        "decode_tokens_per_s": 25.18639645161403,
+        "prefill_effective_tokens_per_s": 690.7580496002514,
+        "total_s": 32.148879865999334
+      }
+    ],
+    "note": "cold unique cache_salt; per-request decode excludes prefill; aggregate includes prefill; verify running/queued separately"
+  },
+  "fullgraph4-c4-64k": {
+    "base": "http://127.0.0.1:8081",
+    "model": "qwen3.8-27b",
+    "concurrency_submitted": 4,
+    "input_each": 65536,
+    "output_each": 512,
+    "wall_s": 338.7037705160037,
+    "aggregate_output_tokens_per_wall_s": 6.046581639407029,
+    "results": [
+      {
+        "usage": {
+          "prompt_tokens": 65536,
+          "total_tokens": 66048,
+          "completion_tokens": 512
+        },
+        "input_tokens": 65536,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 74.67879956999968,
+        "decode_tokens_per_s": 2.1368366684571076,
+        "prefill_effective_tokens_per_s": 877.5716853692896,
+        "total_s": 313.8176061389968
+      },
+      {
+        "usage": {
+          "prompt_tokens": 65536,
+          "total_tokens": 66048,
+          "completion_tokens": 512
+        },
+        "input_tokens": 65536,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 151.04059820900147,
+        "decode_tokens_per_s": 2.9260904582814824,
+        "prefill_effective_tokens_per_s": 433.89658659398964,
+        "total_s": 325.6765553669975
+      },
+      {
+        "usage": {
+          "prompt_tokens": 65536,
+          "total_tokens": 66048,
+          "completion_tokens": 512
+        },
+        "input_tokens": 65536,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 228.738251096991,
+        "decode_tokens_per_s": 5.099265910128293,
+        "prefill_effective_tokens_per_s": 286.5108904422419,
+        "total_s": 328.9489345149923
+      },
+      {
+        "usage": {
+          "prompt_tokens": 65536,
+          "total_tokens": 66048,
+          "completion_tokens": 512
+        },
+        "input_tokens": 65536,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 308.2933004689985,
+        "decode_tokens_per_s": 16.81460439476066,
+        "prefill_effective_tokens_per_s": 212.57678937655086,
+        "total_s": 338.68382370199834
+      }
+    ],
+    "note": "cold unique cache_salt; per-request decode excludes prefill; aggregate includes prefill; verify running/queued separately"
+  },
+  "fullgraph4-c4-8k": {
+    "base": "http://127.0.0.1:8081",
+    "model": "qwen3.8-27b",
+    "concurrency_submitted": 4,
+    "input_each": 8192,
+    "output_each": 512,
+    "wall_s": 50.67094077500224,
+    "aggregate_output_tokens_per_wall_s": 40.417643104237584,
+    "results": [
+      {
+        "usage": {
+          "prompt_tokens": 8192,
+          "total_tokens": 8704,
+          "completion_tokens": 512
+        },
+        "input_tokens": 8192,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 8.07940695099387,
+        "decode_tokens_per_s": 14.713352953315967,
+        "prefill_effective_tokens_per_s": 1013.9358061413503,
+        "total_s": 42.810015140996256
+      },
+      {
+        "usage": {
+          "prompt_tokens": 8192,
+          "total_tokens": 8704,
+          "completion_tokens": 512
+        },
+        "input_tokens": 8192,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 13.108646692999173,
+        "decode_tokens_per_s": 15.364804691460575,
+        "prefill_effective_tokens_per_s": 624.9310239153089,
+        "total_s": 46.36664686199947
+      },
+      {
+        "usage": {
+          "prompt_tokens": 8192,
+          "total_tokens": 8704,
+          "completion_tokens": 512
+        },
+        "input_tokens": 8192,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 19.430785722004657,
+        "decode_tokens_per_s": 16.36180789594638,
+        "prefill_effective_tokens_per_s": 421.5990087689999,
+        "total_s": 50.662192688003415
+      },
+      {
+        "usage": {
+          "prompt_tokens": 8192,
+          "total_tokens": 8704,
+          "completion_tokens": 512
+        },
+        "input_tokens": 8192,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 23.666562624996004,
+        "decode_tokens_per_s": 21.19451378928487,
+        "prefill_effective_tokens_per_s": 346.1423667562024,
+        "total_s": 47.77675355699466
+      }
+    ],
+    "note": "cold unique cache_salt; per-request decode excludes prefill; aggregate includes prefill; verify running/queued separately"
+  },
+  "max4-c4-64k": {
+    "base": "http://127.0.0.1:8081",
+    "model": "qwen3.8-27b",
+    "concurrency_submitted": 4,
+    "input_each": 65536,
+    "output_each": 512,
+    "wall_s": 349.3616145880005,
+    "aggregate_output_tokens_per_wall_s": 5.862120835499317,
+    "results": [
+      {
+        "usage": {
+          "prompt_tokens": 65536,
+          "total_tokens": 66048,
+          "completion_tokens": 512
+        },
+        "input_tokens": 65536,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 74.74126881199481,
+        "decode_tokens_per_s": 2.1073702750856502,
+        "prefill_effective_tokens_per_s": 876.8382052069537,
+        "total_s": 317.22380667299876
+      },
+      {
+        "usage": {
+          "prompt_tokens": 65536,
+          "total_tokens": 66048,
+          "completion_tokens": 512
+        },
+        "input_tokens": 65536,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 151.1306590519962,
+        "decode_tokens_per_s": 2.7580802768962234,
+        "prefill_effective_tokens_per_s": 433.63802163697625,
+        "total_s": 336.4047795899969
+      },
+      {
+        "usage": {
+          "prompt_tokens": 65536,
+          "total_tokens": 66048,
+          "completion_tokens": 512
+        },
+        "input_tokens": 65536,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 228.88367513100093,
+        "decode_tokens_per_s": 4.469970325435521,
+        "prefill_effective_tokens_per_s": 286.3288522542757,
+        "total_s": 343.2023960890001
+      },
+      {
+        "usage": {
+          "prompt_tokens": 65536,
+          "total_tokens": 66048,
+          "completion_tokens": 512
+        },
+        "input_tokens": 65536,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 308.39553246300056,
+        "decode_tokens_per_s": 12.479303535733745,
+        "prefill_effective_tokens_per_s": 212.5063209463406,
+        "total_s": 349.34362765400147
+      }
+    ],
+    "note": "cold unique cache_salt; per-request decode excludes prefill; aggregate includes prefill; verify running/queued separately"
+  },
+  "max4-c4-8k": {
+    "base": "http://127.0.0.1:8081",
+    "model": "qwen3.8-27b",
+    "concurrency_submitted": 4,
+    "input_each": 8192,
+    "output_each": 512,
+    "wall_s": 52.03424126900063,
+    "aggregate_output_tokens_per_wall_s": 39.35869823511955,
+    "results": [
+      {
+        "usage": {
+          "prompt_tokens": 8192,
+          "total_tokens": 8704,
+          "completion_tokens": 512
+        },
+        "input_tokens": 8192,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 8.42118055500032,
+        "decode_tokens_per_s": 12.64277386112947,
+        "prefill_effective_tokens_per_s": 972.7852225108466,
+        "total_s": 48.8397707289987
+      },
+      {
+        "usage": {
+          "prompt_tokens": 8192,
+          "total_tokens": 8704,
+          "completion_tokens": 512
+        },
+        "input_tokens": 8192,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 13.460896165997838,
+        "decode_tokens_per_s": 15.970257447073791,
+        "prefill_effective_tokens_per_s": 608.5776087251126,
+        "total_s": 45.45807247999619
+      },
+      {
+        "usage": {
+          "prompt_tokens": 8192,
+          "total_tokens": 8704,
+          "completion_tokens": 512
+        },
+        "input_tokens": 8192,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 19.621886495995568,
+        "decode_tokens_per_s": 15.769677566331513,
+        "prefill_effective_tokens_per_s": 417.49298680694244,
+        "total_s": 52.026125491996936
+      },
+      {
+        "usage": {
+          "prompt_tokens": 8192,
+          "total_tokens": 8704,
+          "completion_tokens": 512
+        },
+        "input_tokens": 8192,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 23.830457131000003,
+        "decode_tokens_per_s": 24.04894544349287,
+        "prefill_effective_tokens_per_s": 343.76176482755693,
+        "total_s": 45.078938466002
+      }
+    ],
+    "note": "cold unique cache_salt; per-request decode excludes prefill; aggregate includes prefill; verify running/queued separately"
+  },
+  "mtp5-100k": {
+    "base": "http://127.0.0.1:8081",
+    "model": "qwen3.8-27b",
+    "concurrency_submitted": 1,
+    "input_each": 102400,
+    "output_each": 512,
+    "wall_s": 170.41501938600413,
+    "aggregate_output_tokens_per_wall_s": 3.00443001940033,
+    "results": [
+      {
+        "usage": {
+          "prompt_tokens": 102400,
+          "total_tokens": 102912,
+          "completion_tokens": 512
+        },
+        "input_tokens": 102400,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 140.18341819600028,
+        "decode_tokens_per_s": 16.906288852726078,
+        "prefill_effective_tokens_per_s": 730.4715587461804,
+        "total_s": 170.4091456160022
+      }
+    ],
+    "note": "cold unique cache_salt; per-request decode excludes prefill; aggregate includes prefill; verify running/queued separately"
+  },
+  "mtp5-8k-a": {
+    "base": "http://127.0.0.1:8081",
+    "model": "qwen3.8-27b",
+    "concurrency_submitted": 1,
+    "input_each": 8192,
+    "output_each": 512,
+    "wall_s": 29.562958955000795,
+    "aggregate_output_tokens_per_wall_s": 17.318970025271824,
+    "results": [
+      {
+        "usage": {
+          "prompt_tokens": 8192,
+          "total_tokens": 8704,
+          "completion_tokens": 512
+        },
+        "input_tokens": 8192,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 6.025548443998559,
+        "decode_tokens_per_s": 21.71587366347205,
+        "prefill_effective_tokens_per_s": 1359.5442931272462,
+        "total_s": 29.55701830599719
+      }
+    ],
+    "note": "cold unique cache_salt; per-request decode excludes prefill; aggregate includes prefill; verify running/queued separately"
+  },
+  "mtp5-8k-b": {
+    "base": "http://127.0.0.1:8081",
+    "model": "qwen3.8-27b",
+    "concurrency_submitted": 1,
+    "input_each": 8192,
+    "output_each": 512,
+    "wall_s": 29.478973242999928,
+    "aggregate_output_tokens_per_wall_s": 17.368311839747655,
+    "results": [
+      {
+        "usage": {
+          "prompt_tokens": 8192,
+          "total_tokens": 8704,
+          "completion_tokens": 512
+        },
+        "input_tokens": 8192,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 5.763155008993635,
+        "decode_tokens_per_s": 21.552927470018872,
+        "prefill_effective_tokens_per_s": 1421.4436341233325,
+        "total_s": 29.472572812999715
+      }
+    ],
+    "note": "cold unique cache_salt; per-request decode excludes prefill; aggregate includes prefill; verify running/queued separately"
+  },
+  "mtp6-100k": {
+    "base": "http://127.0.0.1:8081",
+    "model": "qwen3.8-27b",
+    "concurrency_submitted": 1,
+    "input_each": 102400,
+    "output_each": 512,
+    "wall_s": 172.8349365940012,
+    "aggregate_output_tokens_per_wall_s": 2.962364034088295,
+    "results": [
+      {
+        "usage": {
+          "prompt_tokens": 102400,
+          "total_tokens": 102912,
+          "completion_tokens": 512
+        },
+        "input_tokens": 102400,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 140.98973828899761,
+        "decode_tokens_per_s": 16.04938589688428,
+        "prefill_effective_tokens_per_s": 726.2939930429743,
+        "total_s": 172.82914616399648
+      }
+    ],
+    "note": "cold unique cache_salt; per-request decode excludes prefill; aggregate includes prefill; verify running/queued separately"
+  },
+  "mtp6-8k-a": {
+    "base": "http://127.0.0.1:8081",
+    "model": "qwen3.8-27b",
+    "concurrency_submitted": 1,
+    "input_each": 8192,
+    "output_each": 512,
+    "wall_s": 27.538696850002452,
+    "aggregate_output_tokens_per_wall_s": 18.592019905253956,
+    "results": [
+      {
+        "usage": {
+          "prompt_tokens": 8192,
+          "total_tokens": 8704,
+          "completion_tokens": 512
+        },
+        "input_tokens": 8192,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 6.113514327000303,
+        "decode_tokens_per_s": 23.85726882516303,
+        "prefill_effective_tokens_per_s": 1339.982138231046,
+        "total_s": 27.532841927000845
+      }
+    ],
+    "note": "cold unique cache_salt; per-request decode excludes prefill; aggregate includes prefill; verify running/queued separately"
+  },
+  "mtp6-8k-b": {
+    "base": "http://127.0.0.1:8081",
+    "model": "qwen3.8-27b",
+    "concurrency_submitted": 1,
+    "input_each": 8192,
+    "output_each": 512,
+    "wall_s": 27.457415090000723,
+    "aggregate_output_tokens_per_wall_s": 18.64705757340053,
+    "results": [
+      {
+        "usage": {
+          "prompt_tokens": 8192,
+          "total_tokens": 8704,
+          "completion_tokens": 512
+        },
+        "input_tokens": 8192,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 5.827428823999071,
+        "decode_tokens_per_s": 23.631234880468465,
+        "prefill_effective_tokens_per_s": 1405.7657755102778,
+        "total_s": 27.451628094000625
+      }
+    ],
+    "note": "cold unique cache_salt; per-request decode excludes prefill; aggregate includes prefill; verify running/queued separately"
+  },
+  "mtp6h8-100k": {
+    "base": "http://127.0.0.1:8081",
+    "model": "qwen3.8-27b",
+    "concurrency_submitted": 1,
+    "input_each": 102400,
+    "output_each": 512,
+    "wall_s": 172.51793943200028,
+    "aggregate_output_tokens_per_wall_s": 2.9678072998420553,
+    "results": [
+      {
+        "usage": {
+          "prompt_tokens": 102400,
+          "total_tokens": 102912,
+          "completion_tokens": 512
+        },
+        "input_tokens": 102400,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 140.79203601700283,
+        "decode_tokens_per_s": 16.11038187682973,
+        "prefill_effective_tokens_per_s": 727.3138658754364,
+        "total_s": 172.51099631100078
+      }
+    ],
+    "note": "cold unique cache_salt; per-request decode excludes prefill; aggregate includes prefill; verify running/queued separately"
+  },
+  "mtp6h8-8k-a": {
+    "base": "http://127.0.0.1:8081",
+    "model": "qwen3.8-27b",
+    "concurrency_submitted": 1,
+    "input_each": 8192,
+    "output_each": 512,
+    "wall_s": 26.77335870599927,
+    "aggregate_output_tokens_per_wall_s": 19.123487853067648,
+    "results": [
+      {
+        "usage": {
+          "prompt_tokens": 8192,
+          "total_tokens": 8704,
+          "completion_tokens": 512
+        },
+        "input_tokens": 8192,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 6.10444708999421,
+        "decode_tokens_per_s": 24.730816113197267,
+        "prefill_effective_tokens_per_s": 1341.9724799363885,
+        "total_s": 26.767091867994168
+      }
+    ],
+    "note": "cold unique cache_salt; per-request decode excludes prefill; aggregate includes prefill; verify running/queued separately"
+  },
+  "mtp6h8-8k-b": {
+    "base": "http://127.0.0.1:8081",
+    "model": "qwen3.8-27b",
+    "concurrency_submitted": 1,
+    "input_each": 8192,
+    "output_each": 512,
+    "wall_s": 26.66731553599675,
+    "aggregate_output_tokens_per_wall_s": 19.19953282544991,
+    "results": [
+      {
+        "usage": {
+          "prompt_tokens": 8192,
+          "total_tokens": 8704,
+          "completion_tokens": 512
+        },
+        "input_tokens": 8192,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 5.810676575994876,
+        "decode_tokens_per_s": 24.508464906509584,
+        "prefill_effective_tokens_per_s": 1409.818614555639,
+        "total_s": 26.66090326399717
+      }
+    ],
+    "note": "cold unique cache_salt; per-request decode excludes prefill; aggregate includes prefill; verify running/queued separately"
+  },
+  "mtp7b448-100k": {
+    "base": "http://127.0.0.1:8081",
+    "model": "qwen3.8-27b",
+    "concurrency_submitted": 1,
+    "input_each": 102400,
+    "output_each": 512,
+    "wall_s": 176.49688833799883,
+    "aggregate_output_tokens_per_wall_s": 2.900901000699224,
+    "results": [
+      {
+        "usage": {
+          "prompt_tokens": 102400,
+          "total_tokens": 102912,
+          "completion_tokens": 512
+        },
+        "input_tokens": 102400,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 140.3710280680025,
+        "decode_tokens_per_s": 14.147398561087364,
+        "prefill_effective_tokens_per_s": 729.495262728948,
+        "total_s": 176.4910192640018
+      }
+    ],
+    "note": "cold unique cache_salt; per-request decode excludes prefill; aggregate includes prefill; verify running/queued separately"
+  },
+  "mtp7b448-8k-a": {
+    "base": "http://127.0.0.1:8081",
+    "model": "qwen3.8-27b",
+    "concurrency_submitted": 1,
+    "input_each": 8192,
+    "output_each": 512,
+    "wall_s": 31.126241892001417,
+    "aggregate_output_tokens_per_wall_s": 16.449142873607553,
+    "results": [
+      {
+        "usage": {
+          "prompt_tokens": 8192,
+          "total_tokens": 8704,
+          "completion_tokens": 512
+        },
+        "input_tokens": 8192,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 6.14163347199792,
+        "decode_tokens_per_s": 20.457509186052203,
+        "prefill_effective_tokens_per_s": 1333.8471006696334,
+        "total_s": 31.120361602996127
+      }
+    ],
+    "note": "cold unique cache_salt; per-request decode excludes prefill; aggregate includes prefill; verify running/queued separately"
+  },
+  "mtp7b448-8k-b": {
+    "base": "http://127.0.0.1:8081",
+    "model": "qwen3.8-27b",
+    "concurrency_submitted": 1,
+    "input_each": 8192,
+    "output_each": 512,
+    "wall_s": 31.01239979299862,
+    "aggregate_output_tokens_per_wall_s": 16.509525332366877,
+    "results": [
+      {
+        "usage": {
+          "prompt_tokens": 8192,
+          "total_tokens": 8704,
+          "completion_tokens": 512
+        },
+        "input_tokens": 8192,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 5.844862739002565,
+        "decode_tokens_per_s": 20.30889845681058,
+        "prefill_effective_tokens_per_s": 1401.5726914055774,
+        "total_s": 31.006579227003385
+      }
+    ],
+    "note": "cold unique cache_salt; per-request decode excludes prefill; aggregate includes prefill; verify running/queued separately"
+  },
+  "mtp7h8-8k-a": {
+    "base": "http://127.0.0.1:8081",
+    "model": "qwen3.8-27b",
+    "concurrency_submitted": 1,
+    "input_each": 8192,
+    "output_each": 512,
+    "wall_s": 33.2370000209994,
+    "aggregate_output_tokens_per_wall_s": 15.404519050350943,
+    "results": [
+      {
+        "usage": {
+          "prompt_tokens": 8192,
+          "total_tokens": 8704,
+          "completion_tokens": 512
+        },
+        "input_tokens": 8192,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 6.1407375630005845,
+        "decode_tokens_per_s": 18.863006346425593,
+        "prefill_effective_tokens_per_s": 1334.0417036153383,
+        "total_s": 33.23108994500217
+      }
+    ],
+    "note": "cold unique cache_salt; per-request decode excludes prefill; aggregate includes prefill; verify running/queued separately"
+  },
+  "mtp7h8-8k-b": {
+    "base": "http://127.0.0.1:8081",
+    "model": "qwen3.8-27b",
+    "concurrency_submitted": 1,
+    "input_each": 8192,
+    "output_each": 512,
+    "wall_s": 33.126417572995706,
+    "aggregate_output_tokens_per_wall_s": 15.455942341841903,
+    "results": [
+      {
+        "usage": {
+          "prompt_tokens": 8192,
+          "total_tokens": 8704,
+          "completion_tokens": 512
+        },
+        "input_tokens": 8192,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 5.835928735003108,
+        "decode_tokens_per_s": 18.729074515420447,
+        "prefill_effective_tokens_per_s": 1403.7183063709288,
+        "total_s": 33.12000658499892
+      }
+    ],
+    "note": "cold unique cache_salt; per-request decode excludes prefill; aggregate includes prefill; verify running/queued separately"
+  },
+  "optimized-100k": {
+    "base": "http://127.0.0.1:8081",
+    "model": "qwen3.8-27b",
+    "concurrency_submitted": 1,
+    "input_each": 102400,
+    "output_each": 512,
+    "wall_s": 172.8960060219979,
+    "aggregate_output_tokens_per_wall_s": 2.9613176832717425,
+    "results": [
+      {
+        "usage": {
+          "prompt_tokens": 102400,
+          "total_tokens": 102912,
+          "completion_tokens": 512
+        },
+        "input_tokens": 102400,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 139.03949646500405,
+        "decode_tokens_per_s": 15.095780791634812,
+        "prefill_effective_tokens_per_s": 736.4813783382326,
+        "total_s": 172.8901513000019
+      }
+    ],
+    "note": "cold unique cache_salt; per-request decode excludes prefill; aggregate includes prefill; verify running/queued separately"
+  },
+  "optimized-8k-a": {
+    "base": "http://127.0.0.1:8081",
+    "model": "qwen3.8-27b",
+    "concurrency_submitted": 1,
+    "input_each": 8192,
+    "output_each": 512,
+    "wall_s": 23.89343981899583,
+    "aggregate_output_tokens_per_wall_s": 21.428475928064085,
+    "results": [
+      {
+        "usage": {
+          "prompt_tokens": 8192,
+          "total_tokens": 8704,
+          "completion_tokens": 512
+        },
+        "input_tokens": 8192,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 5.935862042999361,
+        "decode_tokens_per_s": 28.465673916712362,
+        "prefill_effective_tokens_per_s": 1380.0859825678538,
+        "total_s": 23.887568596001074
+      }
+    ],
+    "note": "cold unique cache_salt; per-request decode excludes prefill; aggregate includes prefill; verify running/queued separately"
+  },
+  "optimized-8k-b": {
+    "base": "http://127.0.0.1:8081",
+    "model": "qwen3.8-27b",
+    "concurrency_submitted": 1,
+    "input_each": 8192,
+    "output_each": 512,
+    "wall_s": 23.791180690001056,
+    "aggregate_output_tokens_per_wall_s": 21.52057969175036,
+    "results": [
+      {
+        "usage": {
+          "prompt_tokens": 8192,
+          "total_tokens": 8704,
+          "completion_tokens": 512
+        },
+        "input_tokens": 8192,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 5.6703297210042365,
+        "decode_tokens_per_s": 28.209036028556202,
+        "prefill_effective_tokens_per_s": 1444.7131653834701,
+        "total_s": 23.78535495899996
+      }
+    ],
+    "note": "cold unique cache_salt; per-request decode excludes prefill; aggregate includes prefill; verify running/queued separately"
+  },
+  "optimized-c2-100k": {
+    "base": "http://127.0.0.1:8081",
+    "model": "qwen3.8-27b",
+    "concurrency_submitted": 2,
+    "input_each": 102400,
+    "output_each": 512,
+    "wall_s": 330.1222103390028,
+    "aggregate_output_tokens_per_wall_s": 3.1018815697024853,
+    "results": [
+      {
+        "usage": {
+          "prompt_tokens": 102400,
+          "total_tokens": 102912,
+          "completion_tokens": 512
+        },
+        "input_tokens": 102400,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 141.07492257900594,
+        "decode_tokens_per_s": 2.8084162972919176,
+        "prefill_effective_tokens_per_s": 725.8554399890108,
+        "total_s": 323.028151986
+      },
+      {
+        "usage": {
+          "prompt_tokens": 102400,
+          "total_tokens": 102912,
+          "completion_tokens": 512
+        },
+        "input_tokens": 102400,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 286.34586032500374,
+        "decode_tokens_per_s": 11.67638713926529,
+        "prefill_effective_tokens_per_s": 357.60950021689007,
+        "total_s": 330.1096558950012
+      }
+    ],
+    "note": "cold unique cache_salt; per-request decode excludes prefill; aggregate includes prefill; verify running/queued separately"
+  },
+  "optimized-c2-8k": {
+    "base": "http://127.0.0.1:8081",
+    "model": "qwen3.8-27b",
+    "concurrency_submitted": 2,
+    "input_each": 8192,
+    "output_each": 512,
+    "wall_s": 39.99474659800035,
+    "aggregate_output_tokens_per_wall_s": 25.6033626189095,
+    "results": [
+      {
+        "usage": {
+          "prompt_tokens": 8192,
+          "total_tokens": 8704,
+          "completion_tokens": 512
+        },
+        "input_tokens": 8192,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 9.477672699002142,
+        "decode_tokens_per_s": 18.093301995887913,
+        "prefill_effective_tokens_per_s": 864.3472147822214,
+        "total_s": 37.720427038002526
+      },
+      {
+        "usage": {
+          "prompt_tokens": 8192,
+          "total_tokens": 8704,
+          "completion_tokens": 512
+        },
+        "input_tokens": 8192,
+        "output_tokens": 512,
+        "first_chunk_tokens": 1,
+        "ttft_s": 14.19101532499917,
+        "decode_tokens_per_s": 19.80912693921917,
+        "prefill_effective_tokens_per_s": 577.2666586843023,
+        "total_s": 39.987532448998536
+      }
+    ],
+    "note": "cold unique cache_salt; per-request decode excludes prefill; aggregate includes prefill; verify running/queued separately"
+  }
+}

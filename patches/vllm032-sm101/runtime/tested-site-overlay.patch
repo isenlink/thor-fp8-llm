@@ -1,0 +1,104 @@
+--- a/vllm/model_executor/warmup/kernel_warmup.py
++++ b/vllm/model_executor/warmup/kernel_warmup.py
+@@ -160,10 +160,6 @@
+ 
+ 
+ def kernel_warmup(worker: "Worker", *, process_local_only: bool = False):
+-    from vllm.model_executor.warmup.minimax_m3_msa_warmup import (
+-        minimax_m3_msa_warmup,
+-    )
+-
+     if not worker.use_v2_model_runner:
+         # The KV-block zeroing kernel is driven by the scheduler's
+         # `new_block_ids_to_zero`, so no dummy run ever reaches it.
+@@ -245,7 +241,15 @@
+ 
+     b12x_warmup(worker, cudagraph_capture_sizes)
+ 
+-    minimax_m3_msa_warmup(worker)
++    if any(
++        type(module).__name__ == "MiniMaxM3SparseAttention"
++        for module in worker.get_model().modules()
++    ):
++        from vllm.model_executor.warmup.minimax_m3_msa_warmup import (
++            minimax_m3_msa_warmup,
++        )
++
++        minimax_m3_msa_warmup(worker)
+ 
+     # Allocate the exact decode-sized workspace, autotune cache misses, and
+     # resolve every CUDA Graph bucket before capture begins.
+--- a/vllm/model_executor/warmup/qwen_vl_triton_warmup.py
++++ b/vllm/model_executor/warmup/qwen_vl_triton_warmup.py
+@@ -19,9 +19,17 @@
+ 
+ 
+ def _warm_vision(model: torch.nn.Module, device: torch.device) -> None:
++    visuals = [
++        module
++        for module in model.modules()
++        if type(module).__name__ == "Qwen3_VisionTransformer"
++    ]
++    if not visuals:
++        return
++
+     from vllm.model_executor.models.qwen3_vl import Qwen3_VisionTransformer
+ 
+-    for visual in model.modules():
++    for visual in visuals:
+         if not isinstance(visual, Qwen3_VisionTransformer):
+             continue
+         # CPU offloading keeps tower weights off the accelerator until the
+--- a/vllm/transformers_utils/config.py
++++ b/vllm/transformers_utils/config.py
+@@ -777,6 +777,9 @@
+         Tuple of (resolved_model, resolved_tokenizer, speculative_config)
+ 
+     """
++    if str(model).lower().endswith(".gguf"):
++        return model, tokenizer, vllm_speculative_config
++
+     kwargs["local_files_only"] = huggingface_hub.constants.HF_HUB_OFFLINE
+     config_dict, _ = PreTrainedConfig.get_config_dict(
+         model,
+--- a/vllm/platforms/__init__.py
++++ b/vllm/platforms/__init__.py
+@@ -92,9 +92,15 @@
+         import os
+ 
+         def cuda_is_jetson() -> bool:
+-            return os.path.isfile("/etc/nv_tegra_release") or os.path.exists(
++            if os.path.isfile("/etc/nv_tegra_release") or os.path.exists(
+                 "/sys/class/tegra-firmware"
+-            )
++            ):
++                return True
++            try:
++                with open("/proc/device-tree/compatible", "rb") as stream:
++                    return b"nvidia,tegra" in stream.read()
++            except OSError:
++                return False
+ 
+         if cuda_is_jetson():
+             logger.debug("Confirmed CUDA platform is available on Jetson.")
+--- a/vllm/utils/mem_utils.py
++++ b/vllm/utils/mem_utils.py
+@@ -148,7 +148,17 @@
+             # account for reclaimable OS memory (page cache, buffers).
+             # Use psutil to get the true available memory.
+             # https://docs.nvidia.com/cuda/cuda-for-tegra-appnote/#estimating-total-allocatable-device-memory-on-an-integrated-gpu-device
+-            self.free_memory = psutil.virtual_memory().available
++            # DRIVE Thor reserves hugetlb RAM for CUDA; host available
++            # excludes that pool and must not replace CUDA's free count.
++            thor_pool = False
++            if torch.cuda.get_device_properties(device).name == "Thor":
++                with open("/proc/meminfo") as stream:
++                    for line in stream:
++                        if line.startswith("Hugetlb:"):
++                            thor_pool = int(line.split()[1]) * 1024 >= self.total_memory
++                            break
++            if not thor_pool:
++                self.free_memory = psutil.virtual_memory().available
+ 
+         self.cuda_memory = self.total_memory - self.free_memory
+ 

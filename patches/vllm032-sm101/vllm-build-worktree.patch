@@ -1,0 +1,178 @@
+diff --git a/csrc/cooperative_topk.cuh b/csrc/cooperative_topk.cuh
+index f34664a..b33bb74 100644
+--- a/csrc/cooperative_topk.cuh
++++ b/csrc/cooperative_topk.cuh
+@@ -75,19 +75,34 @@ __device__ __forceinline__ void mbarrier_init(uint64_t* a, uint32_t n) {
+   cuda::ptx::mbarrier_init(a, n);
+ }
+ __device__ __forceinline__ void mbarrier_wait(uint64_t* a, uint32_t p) {
+-  while (!cuda::ptx::mbarrier_try_wait_parity(cuda::ptx::sem_relaxed,
+-                                              cuda::ptx::scope_cta, a, p));
++  uint32_t done = 0;
++  while (!done) {
++    asm volatile(
++        "{.reg .pred P;\n"
++        " mbarrier.try_wait.parity.shared::cta.b64 P, [%1], %2, 10000000;\n"
++        " selp.b32 %0, 1, 0, P;}\n"
++        : "=r"(done)
++        : "r"((uint32_t)__cvta_generic_to_shared(a)), "r"(p)
++        : "memory");
++  }
+ }
+ __device__ __forceinline__ void mbarrier_arrive_expect_tx(uint64_t* a,
+                                                           uint32_t t) {
+-  cuda::ptx::mbarrier_arrive_expect_tx(cuda::ptx::sem_relaxed,
+-                                       cuda::ptx::scope_cta,
+-                                       cuda::ptx::space_shared, a, t);
++  asm volatile(
++      "mbarrier.arrive.expect_tx.relaxed.cta.shared::cta.b64 _, [%0], %1;"
++      :
++      : "r"((uint32_t)__cvta_generic_to_shared(a)), "r"(t)
++      : "memory");
+ }
+ __device__ __forceinline__ void tma_load(void* d, const void* s, uint32_t n,
+                                          uint64_t* m) {
+-  cuda::ptx::cp_async_bulk(cuda::ptx::space_shared, cuda::ptx::space_global, d,
+-                           s, n, m);
++  asm volatile(
++      "cp.async.bulk.shared::cluster.global.mbarrier::complete_tx::bytes"
++      " [%0], [%1], %2, [%3];"
++      :
++      : "r"((uint32_t)__cvta_generic_to_shared(d)), "l"(s), "r"(n),
++        "r"((uint32_t)__cvta_generic_to_shared(m))
++      : "memory");
+ }
+ 
+ // ============================================================================
+diff --git a/csrc/quantization/fp4/activation_nvfp4_quant_fusion_kernels.cu b/csrc/quantization/fp4/activation_nvfp4_quant_fusion_kernels.cu
+index 2064775..64fd0a9 100644
+--- a/csrc/quantization/fp4/activation_nvfp4_quant_fusion_kernels.cu
++++ b/csrc/quantization/fp4/activation_nvfp4_quant_fusion_kernels.cu
+@@ -102,8 +102,9 @@ __global__ void __launch_bounds__(512, VLLM_BLOCKS_PER_SM(512))
+       if (valid) {
+         if constexpr (CVT_FP4_PACK16) {
+           int64_t outOffset = rowIdx * (numCols / 8) + colIdx * 2;
++          const auto& packed = reinterpret_cast<const u32x2&>(out_val);
+           uint64_t packed64 =
+-              (uint64_t(out_val.hi) << 32) | uint64_t(out_val.lo);
++              (uint64_t(packed.hi) << 32) | uint64_t(packed.lo);
+           reinterpret_cast<uint64_t*>(out)[outOffset >> 1] = packed64;
+         } else {
+           int64_t outOffset =
+diff --git a/csrc/quantization/fp4/nvfp4_quant_kernels.cu b/csrc/quantization/fp4/nvfp4_quant_kernels.cu
+index 13a3026..8c44b77 100644
+--- a/csrc/quantization/fp4/nvfp4_quant_kernels.cu
++++ b/csrc/quantization/fp4/nvfp4_quant_kernels.cu
+@@ -107,8 +107,9 @@ __global__ void __launch_bounds__(512, VLLM_BLOCKS_PER_SM(512))
+         if (valid_output) {
+           if constexpr (CVT_FP4_PACK16) {
+             int64_t outOffset = rowIdx * (outputCols / 8) + colIdx * 2;
++            const auto& packed = reinterpret_cast<const u32x2&>(out_val);
+             uint64_t packed64 =
+-                (uint64_t(out_val.hi) << 32) | uint64_t(out_val.lo);
++                (uint64_t(packed.hi) << 32) | uint64_t(packed.lo);
+             reinterpret_cast<uint64_t*>(out)[outOffset >> 1] = packed64;
+           } else {
+             int64_t outOffset =
+@@ -121,8 +122,9 @@ __global__ void __launch_bounds__(512, VLLM_BLOCKS_PER_SM(512))
+         // the padded-output predicate and use the original address arithmetic.
+         if constexpr (CVT_FP4_PACK16) {
+           int64_t outOffset = rowIdx * (numCols / 8) + colIdx * 2;
++          const auto& packed = reinterpret_cast<const u32x2&>(out_val);
+           uint64_t packed64 =
+-              (uint64_t(out_val.hi) << 32) | uint64_t(out_val.lo);
++              (uint64_t(packed.hi) << 32) | uint64_t(packed.lo);
+           reinterpret_cast<uint64_t*>(out)[outOffset >> 1] = packed64;
+         } else {
+           reinterpret_cast<fp4_packed_t*>(out)[inOffset] = out_val;
+diff --git a/vllm/model_executor/warmup/kernel_warmup.py b/vllm/model_executor/warmup/kernel_warmup.py
+index b7bf508..5fedb1c 100644
+--- a/vllm/model_executor/warmup/kernel_warmup.py
++++ b/vllm/model_executor/warmup/kernel_warmup.py
+@@ -160,10 +160,6 @@ def _autotune_kimi_k3_kda_qkvg(model: torch.nn.Module) -> None:
+ 
+ 
+ def kernel_warmup(worker: "Worker", *, process_local_only: bool = False):
+-    from vllm.model_executor.warmup.minimax_m3_msa_warmup import (
+-        minimax_m3_msa_warmup,
+-    )
+-
+     if not worker.use_v2_model_runner:
+         # The KV-block zeroing kernel is driven by the scheduler's
+         # `new_block_ids_to_zero`, so no dummy run ever reaches it.
+@@ -245,7 +241,15 @@ def kernel_warmup(worker: "Worker", *, process_local_only: bool = False):
+ 
+     b12x_warmup(worker, cudagraph_capture_sizes)
+ 
+-    minimax_m3_msa_warmup(worker)
++    if any(
++        type(module).__name__ == "MiniMaxM3SparseAttention"
++        for module in worker.get_model().modules()
++    ):
++        from vllm.model_executor.warmup.minimax_m3_msa_warmup import (
++            minimax_m3_msa_warmup,
++        )
++
++        minimax_m3_msa_warmup(worker)
+ 
+     # Allocate the exact decode-sized workspace, autotune cache misses, and
+     # resolve every CUDA Graph bucket before capture begins.
+diff --git a/vllm/model_executor/warmup/qwen_vl_triton_warmup.py b/vllm/model_executor/warmup/qwen_vl_triton_warmup.py
+index 08f6bed..14a617a 100644
+--- a/vllm/model_executor/warmup/qwen_vl_triton_warmup.py
++++ b/vllm/model_executor/warmup/qwen_vl_triton_warmup.py
+@@ -19,9 +19,17 @@ _MROPE_TOKEN_COUNTS = (1, 2, 16)
+ 
+ 
+ def _warm_vision(model: torch.nn.Module, device: torch.device) -> None:
++    visuals = [
++        module
++        for module in model.modules()
++        if type(module).__name__ == "Qwen3_VisionTransformer"
++    ]
++    if not visuals:
++        return
++
+     from vllm.model_executor.models.qwen3_vl import Qwen3_VisionTransformer
+ 
+-    for visual in model.modules():
++    for visual in visuals:
+         if not isinstance(visual, Qwen3_VisionTransformer):
+             continue
+         # CPU offloading keeps tower weights off the accelerator until the
+diff --git a/vllm/platforms/__init__.py b/vllm/platforms/__init__.py
+index add0134..936c8cd 100644
+--- a/vllm/platforms/__init__.py
++++ b/vllm/platforms/__init__.py
+@@ -92,9 +92,15 @@ def cuda_platform_plugin() -> str | None:
+         import os
+ 
+         def cuda_is_jetson() -> bool:
+-            return os.path.isfile("/etc/nv_tegra_release") or os.path.exists(
++            if os.path.isfile("/etc/nv_tegra_release") or os.path.exists(
+                 "/sys/class/tegra-firmware"
+-            )
++            ):
++                return True
++            try:
++                with open("/proc/device-tree/compatible", "rb") as f:
++                    return b"nvidia,tegra" in f.read()
++            except OSError:
++                return False
+ 
+         if cuda_is_jetson():
+             logger.debug("Confirmed CUDA platform is available on Jetson.")
+diff --git a/vllm/transformers_utils/config.py b/vllm/transformers_utils/config.py
+index 9b4e9ec..0a140ef 100644
+--- a/vllm/transformers_utils/config.py
++++ b/vllm/transformers_utils/config.py
+@@ -777,6 +777,9 @@ def maybe_override_with_speculators(
+         Tuple of (resolved_model, resolved_tokenizer, speculative_config)
+ 
+     """
++    if str(model).lower().endswith(".gguf"):
++        return model, tokenizer, vllm_speculative_config
++
+     kwargs["local_files_only"] = huggingface_hub.constants.HF_HUB_OFFLINE
+     config_dict, _ = PreTrainedConfig.get_config_dict(
+         model,

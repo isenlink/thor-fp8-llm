@@ -1,5 +1,7 @@
 # NVIDIA DRIVE Thor (Tegra264) LLM Deployment Notes / 车规域控本地大模型部署实战笔记
 
+本轮 vLLM 0.32 / SM101 独立测试、MTP 与并发验证见 [vLLM 0.32 优化记录](docs/09-vllm032-sm101/README.md)，与下方 llama.cpp 历史数据分别解读。
+
 > 民间实测记录：在 NVIDIA DRIVE Thor 域控板（p3960-0010 / Tegra264, sm_101a, DriveOS 7.0.3, CUDA 12.8）上
 > 从零部署 llama.cpp GPU 推理并调优至 NVFP4 量化路线的全过程。
 >
@@ -76,6 +78,10 @@ DRIVE Thor 的民间本地 LLM 部署资料几乎为零：官方只提供 DriveO
 （torch + vLLM wheel 732 MB + 离线 gcc 工具链 + 全件 SHA256SUMS；文档与补丁在 `vllm-sm101-replica` 分支）
 → 模型权重 **ModelScope**：<https://www.modelscope.cn/models/navyyang/qwen38-27b-nvfp4-vllm-p3-thor04>
 （HF safetensors 23.8G + MTP 头 849M + configs，即板上在跑的生产权重，开箱即 serve；Apache 2.0）
+
+**vLLM 0.32 / SM101 优化验证（2026-10-21，测试节点验证完成，未作生产升级）**
+→ 引擎二进制 **ModelScope**：<https://www.modelscope.cn/models/navyyang/thor05-vllm032-sm101-deploy>
+（vLLM 0.32.0 aarch64 wheel 337 MB + SM101 原生 FA2 扩展 + tested-site overlay + 合格代码文档包 + 全件 SHA256SUMS；文档与脚本见本分支 `docs/09-vllm032-sm101` 与 `scripts/vllm032-thor`）
 
 **最新生产版（2026-10-01，T4/ARES 定案版：262K + DFlash2 + mmproj，200K decode 22 t/s / 短提示 34.8 t/s）**
 → 引擎二进制 **ModelScope**：<https://www.modelscope.cn/models/navyyang/thor01-qwen38-27b-dflash2-t4ares-deploy>

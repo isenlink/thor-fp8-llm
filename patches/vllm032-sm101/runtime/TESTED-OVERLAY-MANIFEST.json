@@ -1,0 +1,44 @@
+[
+  {
+    "path": "vllm/vllm_flash_attn/_vllm_fa2_C.abi3.so",
+    "sha256": "5a9c46c84e005c28c8db8cf1c8645002b8bf284c9594040e34db97e9a97b94ba",
+    "bytes": 58517440,
+    "base_present": true,
+    "provided_separately": true
+  },
+  {
+    "path": "vllm/model_executor/warmup/kernel_warmup.py",
+    "sha256": "4300c25dd2043c05daf360bf3a104a3c23e9cfaa35755ef27640bafc8b623c7f",
+    "bytes": 19427,
+    "base_present": true,
+    "provided_separately": false
+  },
+  {
+    "path": "vllm/model_executor/warmup/qwen_vl_triton_warmup.py",
+    "sha256": "5d896e30268c1e25ffee1aa4a873b232b5bb6318919868c486d7e21f526ca611",
+    "bytes": 4261,
+    "base_present": true,
+    "provided_separately": false
+  },
+  {
+    "path": "vllm/transformers_utils/config.py",
+    "sha256": "a3c2ebf6e12513c9c3bfedd657dbd846d62370a3a8a22bd6c53daf9d8960161e",
+    "bytes": 55091,
+    "base_present": true,
+    "provided_separately": false
+  },
+  {
+    "path": "vllm/platforms/__init__.py",
+    "sha256": "055f29231b8e135183dcb1c3a8b42bafcd722816863c4fb3432dfd1f4e940e2f",
+    "bytes": 12583,
+    "base_present": true,
+    "provided_separately": false
+  },
+  {
+    "path": "vllm/utils/mem_utils.py",
+    "sha256": "4966940af54de66841e61fad4b710ee0ae07606016046b4f2a0bb3056c919368",
+    "bytes": 12343,
+    "base_present": true,
+    "provided_separately": false
+  }
+]

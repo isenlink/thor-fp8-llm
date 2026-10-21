@@ -1,0 +1,26 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -138,4 +138,8 @@
+     # For CUDA we set the architectures on a per file basis
+     if (VLLM_GPU_LANG STREQUAL "CUDA")
++        if("10.1" IN_LIST CUDA_ARCHS)
++            set(FA2_ARCHS "10.1")
++        else()
+         cuda_archs_loose_intersection(FA2_ARCHS "8.0+PTX" "${CUDA_ARCHS}")
++        endif()
+         message(STATUS "FA2_ARCHS: ${FA2_ARCHS}")
+@@ -168,10 +172,10 @@
+     target_compile_definitions(_vllm_fa2_C PRIVATE
+         FLASHATTENTION_DISABLE_BACKWARD
+         FLASHATTENTION_DISABLE_DROPOUT
+-        # FLASHATTENTION_DISABLE_ALIBI
+-        # FLASHATTENTION_DISABLE_SOFTCAP
+-        # FLASHATTENTION_DISABLE_UNEVEN_K
+-        # FLASHATTENTION_DISABLE_LOCAL
++        FLASHATTENTION_DISABLE_ALIBI
++        FLASHATTENTION_DISABLE_SOFTCAP
++        FLASHATTENTION_DISABLE_UNEVEN_K
++        FLASHATTENTION_DISABLE_LOCAL
+         FLASHATTENTION_DISABLE_PYBIND
+         # Stable-ABI build: USE_CUDA allows access to CUDA shims
+         USE_CUDA

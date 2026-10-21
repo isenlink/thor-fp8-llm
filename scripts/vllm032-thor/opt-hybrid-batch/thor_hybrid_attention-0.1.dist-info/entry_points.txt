@@ -1,0 +1,2 @@
+[vllm.general_plugins]
+thor_hybrid = thor_hybrid_attention:register

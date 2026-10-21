@@ -1,0 +1,2 @@
+[vllm.general_plugins]
+thor04_mixed = thor04_mixed:register

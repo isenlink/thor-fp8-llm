@@ -1,5 +1,7 @@
 # NVIDIA DRIVE Thor (Tegra264) LLM Deployment Notes
 
+For the separate vLLM 0.32 / SM101 qualification, MTP sweep, and concurrency measurements, see [the vLLM 0.32 report](docs/09-vllm032-sm101/README.md). Treat these separately from the historical llama.cpp results below.
+
 > Grassroots field notes: deploying and optimizing llama.cpp GPU inference on an
 > NVIDIA DRIVE Thor domain controller (p3960-0010 / Tegra264, sm_101a,
 > DriveOS 7.0.3, CUDA 12.8) — from cross-compilation to NVFP4 quantization.
@@ -67,6 +69,10 @@ experiments, and the measured data — to save the next person the same groping.
 (torch + vLLM wheels 732 MB + offline gcc toolchain + full SHA256SUMS; docs and patches on the `vllm-sm101-replica` branch)
 → Model weights **ModelScope**: <https://www.modelscope.cn/models/navyyang/qwen38-27b-nvfp4-vllm-p3-thor04>
 (HF safetensors 23.8G + MTP head 849M + configs — the exact production weights serving on the board, ready to serve; Apache 2.0)
+
+**vLLM 0.32 / SM101 optimization qualification (2026-10-21, verified on a test node, not a production upgrade)**
+→ Engine binaries **ModelScope**: <https://www.modelscope.cn/models/navyyang/thor05-vllm032-sm101-deploy>
+(vLLM 0.32.0 aarch64 wheel 337 MB + native SM101 FA2 extension + tested-site overlay + qualified code/docs package + full SHA256SUMS; docs and scripts on this branch under `docs/09-vllm032-sm101` and `scripts/vllm032-thor`)
 
 **Latest production build (2026-10-01, T4/ARES final: 262K + DFlash2 + mmproj, 200K decode 22 t/s / short-prompt 34.8 t/s)**
 → Engine binary **ModelScope**: <https://www.modelscope.cn/models/navyyang/thor01-qwen38-27b-dflash2-t4ares-deploy>
