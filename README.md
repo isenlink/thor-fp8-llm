@@ -23,6 +23,11 @@
 > with its binaries (torch + vLLM
 > wheels 732 MB + offline gcc toolchain) on **ModelScope**:
 > <https://www.modelscope.cn/models/navyyang/thor04-vllm-p3-sm101-deploy>
+>
+> 🆕 **CUDA 13.2 共用底座（10-22，LLM/H3/Image 三线共用）**：forward-compat 驱动 + CUDA 13.2
+> runtime + 原生 `sm_110a` llama.cpp 二进制，方法致谢 [souyou233 (EnkiMa)](https://github.com/souyou233)
+> → 底座 **ModelScope**：<https://www.modelscope.cn/models/navyyang/thor-cuda132-shared>
+> → 部署文档：[docs/11-cuda132-shared-base](docs/11-cuda132-shared-base/README.md)
 
 ## Why this repo exists / 为什么有这个仓库
 
@@ -73,6 +78,13 @@ DRIVE Thor 的民间本地 LLM 部署资料几乎为零：官方只提供 DriveO
 
 ### ⚡ 预编译二进制快速下载
 
+**CUDA 13.2 共用底座（2026-10-22，LLM/H3/Image 三线共用，方法致谢 [souyou233](https://github.com/souyou233)）**
+→ 底座 **ModelScope**：<https://www.modelscope.cn/models/navyyang/thor-cuda132-shared>
+（forward-compat 驱动 134 MB + CUDA 13.2 runtime 1.17 GB + 原生 `sm_110a` llama.cpp 二进制 81 MB
++ 源码快照 + 交叉编译工具链 + 全件 SHA256SUMS；部署文档见 [docs/11-cuda132-shared-base](docs/11-cuda132-shared-base/README.md)）
+→ 8080 模型权重 **ModelScope**：<https://www.modelscope.cn/models/navyyang/qwen38-27b-gguf-t4ares-thor01>
+（RadixArk-F8attn-v2 + DFlash2-BF16 + mmproj，Apache 2.0；8082 的 VL-8B 两件走 HF，链接见 docs/11）
+
 **vLLM 线（262144 长上下文 / 2 并发 / MTP / 多模态，10-01 生产定稿）**
 → 引擎二进制 **ModelScope**：<https://www.modelscope.cn/models/navyyang/thor04-vllm-p3-sm101-deploy>
 （torch + vLLM wheel 732 MB + 离线 gcc 工具链 + 全件 SHA256SUMS；文档与补丁在 `vllm-sm101-replica` 分支）
@@ -112,6 +124,7 @@ docs/
   08-prebuilt-server/     **预编译服务端配套**：完整源码补丁集（pin 72797e89 + 12 补丁 + 4 新增 FP8 源文件）、交叉编译配方、启动脚本、128K/200K 实测读数、9 t/s 排障清单、精度自检（**二进制本体走网盘分发，见该目录 README**）
   09-thor-hardware-unlock/ **Thor 硬件解锁 / 保电（拆车件台架）**：断电睡眠循环的机制与方向性说明（双闸门模型、四种方法并列），只讲方向不含可照抄的操作参数
   10-power-loss-self-healing/ **断电自愈（板内钩子链方案）**：借用原厂开机脚本槽位实现零人工介入恢复（七个恢复步骤、网络修复两个坑、本地模型服务托管）；**含 [交给 AI 执行的复现手册](docs/10-power-loss-self-healing/AI-REPRODUCTION-GUIDE.md) + 探测/恢复/钩子三个可直接使用的脚本**
+  11-cuda132-shared-base/ **CUDA 13.2 共用底座（10-22）**：forward-compat 驱动 + 13.2 runtime + 原生 sm_110a llama.cpp 二进制（LLM/H3/Image 三线共用，方法致谢 souyou233）；底座走 ModelScope，本文档含部署步骤/实测/边界
 scripts/                  板端/主机实用脚本（串口探测、GPU 池检查、B3 kernel microbench 全家桶）；
                           tcgen05 实验线的代码级整理包在 `tcgen05` 分支（实验未定论，不进主线）
 ```

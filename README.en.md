@@ -14,6 +14,12 @@ For the separate vLLM 0.32 / SM101 qualification, MTP sweep, and concurrency mea
 > **[`vllm-sm101-replica` branch](https://github.com/isenlink/thor-fp8-llm/tree/vllm-sm101-replica)**,
 > with its binaries (torch + vLLM wheels 732 MB + offline gcc toolchain) on **ModelScope**:
 > <https://www.modelscope.cn/models/navyyang/thor04-vllm-p3-sm101-deploy>
+>
+> 🆕 **CUDA 13.2 shared base (2026-10-22, shared by the LLM / H3 / Image lines)**: forward-compat
+> driver + CUDA 13.2 runtime + native `sm_110a` llama.cpp binary. Method credited to
+> [souyou233 (EnkiMa)](https://github.com/souyou233) → base on **ModelScope**:
+> <https://www.modelscope.cn/models/navyyang/thor-cuda132-shared> → deployment doc:
+> [docs/11-cuda132-shared-base](docs/11-cuda132-shared-base/README.md)
 
 ## Why this repo exists
 
@@ -64,6 +70,13 @@ experiments, and the measured data — to save the next person the same groping.
 
 ### ⚡ Prebuilt binary quick download
 
+**CUDA 13.2 shared base (2026-10-22, shared by the LLM / H3 / Image lines, method credited to [souyou233](https://github.com/souyou233))**
+→ Base **ModelScope**: <https://www.modelscope.cn/models/navyyang/thor-cuda132-shared>
+(forward-compat driver 134 MB + CUDA 13.2 runtime 1.17 GB + native `sm_110a` llama.cpp binary 81 MB
++ source snapshot + cross-compile toolchain + full SHA256SUMS; deployment doc in [docs/11-cuda132-shared-base](docs/11-cuda132-shared-base/README.md))
+→ 8080 model weights **ModelScope**: <https://www.modelscope.cn/models/navyyang/qwen38-27b-gguf-t4ares-thor01>
+(RadixArk-F8attn-v2 + DFlash2-BF16 + mmproj, Apache 2.0; the two 8082 VL-8B files are on HuggingFace — links in docs/11)
+
 **vLLM line (262144 long context / 2 concurrent / MTP / multimodal, production-final 2026-10-01)**
 → Engine binaries **ModelScope**: <https://www.modelscope.cn/models/navyyang/thor04-vllm-p3-sm101-deploy>
 (torch + vLLM wheels 732 MB + offline gcc toolchain + full SHA256SUMS; docs and patches on the `vllm-sm101-replica` branch)
@@ -100,6 +113,7 @@ docs/
   05-system-tuning/       Hugepage pool expansion & persistence (**incl. grow-only proof, the 52/54/56G ladder, swap-first method, five-source persistence, the two-board 56G+LLM load-failure measurements**), overlay, power-loss recovery, temperature, **KV budget & 256K measurements**, **runtime memory-growth investigation (solved: prompt-cache default exceeds usable RAM)**
   06-benchmarks/          Per-stage benchmarks + community comparison, **benchmark methodology (three measurement traps + paired design)**, **speculative-decoding matrix**, **multi-slot concurrency + KV/prefix reuse measurements**, **Q4_K_M MoE throughput + 200K KV measurements**, secondhand Orin-X/Thor market survey
   10-power-loss-self-healing/ **Power-loss self-healing via the in-board vendor hook chain** — zero-touch recovery every boot (seven restore steps, two networking traps, hosting the local model service); ships an **[AI-executable reproduction guide](docs/10-power-loss-self-healing/AI-REPRODUCTION-GUIDE.md)** plus discover/restore/hook scripts ready to adapt
+  11-cuda132-shared-base/ **CUDA 13.2 shared base (2026-10-22)** — forward-compat driver + 13.2 runtime + native sm_110a llama.cpp binary (shared by the LLM/H3/Image lines, method credited to souyou233); binaries on ModelScope, this doc covers deployment steps / measurements / boundaries
 scripts/                  Board/host helper scripts (UART probe, GPU pool check, B3 kernel microbench suite)
 ```
 
