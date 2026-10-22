@@ -14,6 +14,7 @@ For the separate vLLM 0.32 / SM101 qualification, MTP sweep, and concurrency mea
 | Date | Milestone |
 |------|-----------|
 | **2026-10-22** | **🚀 CUDA 13.2 shared base (unified base)** — shared by the LLM / H3 / Image lines; **all future deployments build on it** → [docs/11-cuda132-shared-base](docs/11-cuda132-shared-base/README.md) |
+| 2026-10-22 | H3 line: CUDA 13 forward-compat in production (Thor02:8189, ComfyUI cu130, 8-step LoRA **3.63×**), paused (workflow rework for consistent character + voice; unrelated to H3 itself) |
 | 2026-10-22 | vLLM 0.32 / SM101 qualification merged into main |
 | 2026-10-21 | vLLM 0.32 / SM101 optimization qualification (test node, not a production upgrade) |
 | 2026-10-07 | Four-model 256K same-tier cross-benchmark |
