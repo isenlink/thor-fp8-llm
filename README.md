@@ -2,6 +2,12 @@
 
 本轮 vLLM 0.32 / SM101 独立测试、MTP 与并发验证见 [vLLM 0.32 优化记录](docs/09-vllm032-sm101/README.md)，与下方 llama.cpp 历史数据分别解读。
 
+> 🚀 **统一底座 · CUDA 13.2 共用底座（2026-10-22）** — LLM / H3 / Image 三条部署线的共同基础，
+> **后续所有部署都基于此底座**。方法致谢 [souyou233 (EnkiMa)](https://github.com/souyou233)。
+>
+> - **部署文档**：<https://github.com/isenlink/thor-fp8-llm/blob/main/docs/11-cuda132-shared-base/README.md>
+> - **底座二进制（ModelScope）**：<https://www.modelscope.cn/models/navyyang/thor-cuda132-shared>
+
 > 民间实测记录：在 NVIDIA DRIVE Thor 域控板（p3960-0010 / Tegra264, sm_101a, DriveOS 7.0.3, CUDA 12.8）上
 > 从零部署 llama.cpp GPU 推理并调优至 NVFP4 量化路线的全过程。
 >
@@ -23,11 +29,6 @@
 > with its binaries (torch + vLLM
 > wheels 732 MB + offline gcc toolchain) on **ModelScope**:
 > <https://www.modelscope.cn/models/navyyang/thor04-vllm-p3-sm101-deploy>
->
-> 🆕 **CUDA 13.2 共用底座（10-22，LLM/H3/Image 三线共用）**：forward-compat 驱动 + CUDA 13.2
-> runtime + 原生 `sm_110a` llama.cpp 二进制，方法致谢 [souyou233 (EnkiMa)](https://github.com/souyou233)
-> → 底座 **ModelScope**：<https://www.modelscope.cn/models/navyyang/thor-cuda132-shared>
-> → 部署文档：[docs/11-cuda132-shared-base](docs/11-cuda132-shared-base/README.md)
 
 ## Why this repo exists / 为什么有这个仓库
 

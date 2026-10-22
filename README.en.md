@@ -2,6 +2,13 @@
 
 For the separate vLLM 0.32 / SM101 qualification, MTP sweep, and concurrency measurements, see [the vLLM 0.32 report](docs/09-vllm032-sm101/README.md). Treat these separately from the historical llama.cpp results below.
 
+> 🚀 **Unified base · CUDA 13.2 shared base (2026-10-22)** — the common foundation for the
+> LLM / H3 / Image lines; **all future deployments build on it**. Method credited to
+> [souyou233 (EnkiMa)](https://github.com/souyou233).
+>
+> - **Deployment doc**: <https://github.com/isenlink/thor-fp8-llm/blob/main/docs/11-cuda132-shared-base/README.md>
+> - **Base binaries (ModelScope)**: <https://www.modelscope.cn/models/navyyang/thor-cuda132-shared>
+
 > Grassroots field notes: deploying and optimizing llama.cpp GPU inference on an
 > NVIDIA DRIVE Thor domain controller (p3960-0010 / Tegra264, sm_101a,
 > DriveOS 7.0.3, CUDA 12.8) — from cross-compilation to NVFP4 quantization.
@@ -14,12 +21,6 @@ For the separate vLLM 0.32 / SM101 qualification, MTP sweep, and concurrency mea
 > **[`vllm-sm101-replica` branch](https://github.com/isenlink/thor-fp8-llm/tree/vllm-sm101-replica)**,
 > with its binaries (torch + vLLM wheels 732 MB + offline gcc toolchain) on **ModelScope**:
 > <https://www.modelscope.cn/models/navyyang/thor04-vllm-p3-sm101-deploy>
->
-> 🆕 **CUDA 13.2 shared base (2026-10-22, shared by the LLM / H3 / Image lines)**: forward-compat
-> driver + CUDA 13.2 runtime + native `sm_110a` llama.cpp binary. Method credited to
-> [souyou233 (EnkiMa)](https://github.com/souyou233) → base on **ModelScope**:
-> <https://www.modelscope.cn/models/navyyang/thor-cuda132-shared> → deployment doc:
-> [docs/11-cuda132-shared-base](docs/11-cuda132-shared-base/README.md)
 
 ## Why this repo exists
 
