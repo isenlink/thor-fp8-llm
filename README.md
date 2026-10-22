@@ -8,6 +8,23 @@
 > - **部署文档**：<https://github.com/isenlink/thor-fp8-llm/blob/main/docs/11-cuda132-shared-base/README.md>
 > - **底座二进制（ModelScope）**：<https://www.modelscope.cn/models/navyyang/thor-cuda132-shared>
 
+## Timeline / 时间线（主要节点）
+
+| 日期 | 主要节点 |
+|------|---------|
+| **2026-10-22** | **🚀 CUDA 13.2 共用底座（统一底座）** — LLM / H3 / Image 三线共用，**后续所有部署基于此底座** → [docs/11-cuda132-shared-base](docs/11-cuda132-shared-base/README.md) |
+| 2026-10-22 | vLLM 0.32 / SM101 优化验证并入 main |
+| 2026-10-21 | vLLM 0.32 / SM101 优化验证（测试节点，未作生产升级） |
+| 2026-10-07 | 四模型 256K 同档横比 |
+| 2026-10-01 | vLLM-P3 生产定稿 + T4/ARES 定案版（262K + DFlash2 + mmproj） |
+| 2026-09-30 | 200K 空答定案 → 改 vLLM-P3 路线 |
+| 2026-09-26~29 | GPU 大页池 52/54/56G，50G 档定案 |
+| 2026-09-23 | Occamy-1.0 200K KV 实测 |
+| 2026-09-19 | FP8 快路服务端（网盘分发） |
+| 2026-09-16 | sm_101a 硬件实测 + DFlash2 修订 + KV 256K + 投机配方 + 多 slot 并发 |
+| 2026-09-15 | Qwen3.6-35B-A3B MoE + 投机解码矩阵 |
+| 2026-09-11 | 交叉编译打通（91 个 ARM64 二进制）+ NVFP4 26.48 t/s |
+
 > 民间实测记录：在 NVIDIA DRIVE Thor 域控板（p3960-0010 / Tegra264, sm_101a, DriveOS 7.0.3, CUDA 12.8）上
 > 从零部署 llama.cpp GPU 推理并调优至 NVFP4 量化路线的全过程。
 >

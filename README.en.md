@@ -9,6 +9,23 @@ For the separate vLLM 0.32 / SM101 qualification, MTP sweep, and concurrency mea
 > - **Deployment doc**: <https://github.com/isenlink/thor-fp8-llm/blob/main/docs/11-cuda132-shared-base/README.md>
 > - **Base binaries (ModelScope)**: <https://www.modelscope.cn/models/navyyang/thor-cuda132-shared>
 
+## Timeline / 时间线 (major milestones)
+
+| Date | Milestone |
+|------|-----------|
+| **2026-10-22** | **🚀 CUDA 13.2 shared base (unified base)** — shared by the LLM / H3 / Image lines; **all future deployments build on it** → [docs/11-cuda132-shared-base](docs/11-cuda132-shared-base/README.md) |
+| 2026-10-22 | vLLM 0.32 / SM101 qualification merged into main |
+| 2026-10-21 | vLLM 0.32 / SM101 optimization qualification (test node, not a production upgrade) |
+| 2026-10-07 | Four-model 256K same-tier cross-benchmark |
+| 2026-10-01 | vLLM-P3 production final + T4/ARES final build (262K + DFlash2 + mmproj) |
+| 2026-09-30 | 200K empty-answer verdict → switched to the vLLM-P3 line |
+| 2026-09-26~29 | GPU hugepage pool 52/54/56G, 50G tier finalized |
+| 2026-09-23 | Occamy-1.0 at 200K KV measured |
+| 2026-09-19 | FP8 fastpath server (Baidu-pan distribution) |
+| 2026-09-16 | sm_101a hardware recon + DFlash2 revision + KV 256K + drafting recipes + multi-slot concurrency |
+| 2026-09-15 | Qwen3.6-35B-A3B MoE + speculative-decoding matrix |
+| 2026-09-11 | Cross-compile chain done (91 ARM64 binaries) + NVFP4 26.48 t/s |
+
 > Grassroots field notes: deploying and optimizing llama.cpp GPU inference on an
 > NVIDIA DRIVE Thor domain controller (p3960-0010 / Tegra264, sm_101a,
 > DriveOS 7.0.3, CUDA 12.8) — from cross-compilation to NVFP4 quantization.
