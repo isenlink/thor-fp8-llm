@@ -81,7 +81,7 @@ DRIVE Thor 的民间本地 LLM 部署资料几乎为零：官方只提供 DriveO
 
 **vLLM 0.32 / SM101 优化验证（2026-10-21，测试节点验证完成，未作生产升级）**
 → 引擎二进制 **ModelScope**：<https://www.modelscope.cn/models/navyyang/thor05-vllm032-sm101-deploy>
-（vLLM 0.32.0 aarch64 wheel 337 MB + SM101 原生 FA2 扩展 + tested-site overlay + 合格代码文档包 + 全件 SHA256SUMS；文档与脚本见本分支 `docs/09-vllm032-sm101` 与 `scripts/vllm032-thor`）
+（vLLM 0.32.0 aarch64 wheel 337 MB + SM101 原生 FA2 扩展 + tested-site overlay + 合格代码文档包 + 全件 SHA256SUMS；文档与脚本见仓内 `docs/09-vllm032-sm101` 与 `scripts/vllm032-thor`）
 
 **最新生产版（2026-10-01，T4/ARES 定案版：262K + DFlash2 + mmproj，200K decode 22 t/s / 短提示 34.8 t/s）**
 → 引擎二进制 **ModelScope**：<https://www.modelscope.cn/models/navyyang/thor01-qwen38-27b-dflash2-t4ares-deploy>

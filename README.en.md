@@ -72,7 +72,7 @@ experiments, and the measured data — to save the next person the same groping.
 
 **vLLM 0.32 / SM101 optimization qualification (2026-10-21, verified on a test node, not a production upgrade)**
 → Engine binaries **ModelScope**: <https://www.modelscope.cn/models/navyyang/thor05-vllm032-sm101-deploy>
-(vLLM 0.32.0 aarch64 wheel 337 MB + native SM101 FA2 extension + tested-site overlay + qualified code/docs package + full SHA256SUMS; docs and scripts on this branch under `docs/09-vllm032-sm101` and `scripts/vllm032-thor`)
+(vLLM 0.32.0 aarch64 wheel 337 MB + native SM101 FA2 extension + tested-site overlay + qualified code/docs package + full SHA256SUMS; docs and scripts in this repo under `docs/09-vllm032-sm101` and `scripts/vllm032-thor`)
 
 **Latest production build (2026-10-01, T4/ARES final: 262K + DFlash2 + mmproj, 200K decode 22 t/s / short-prompt 34.8 t/s)**
 → Engine binary **ModelScope**: <https://www.modelscope.cn/models/navyyang/thor01-qwen38-27b-dflash2-t4ares-deploy>
