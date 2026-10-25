@@ -15,8 +15,9 @@ CUDA 12 时代的内核驱动上跑起来。souyou233 用它解开 `comfy_kitche
 `cuda_version < (13,)` 版本门（H3/image 线，原生 int8/fp8，1.9× 提速）；
 本线用它跑 llama.cpp 的 13.2 原生 `sm_110a` 编译产物。
 
-**LLM / H3 / Image 三条部署线共用本底座的 compat + runtime**，各自只带自己的
-模型与启动脚本——这是三线对齐的关键。
+**LLM / H3 / Image / vLLM 四条部署线共用本底座的 compat + runtime**，各自只带自己的
+模型与启动脚本——这是多线对齐的关键。vLLM 0.32 生产部署线实录见
+[vllm032-line/vllm032-cu13-deployment.md](vllm032-line/vllm032-cu13-deployment.md)。
 
 > **H3 线现状（2026-10-22）**：CUDA 13 前向兼容已成功复现（Thor02，
 > ComfyUI 0.38 + torch 2.13+cu130 + comfy_kitchen 0.2.39，端口 8189）——8 步生产

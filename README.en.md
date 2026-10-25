@@ -3,7 +3,7 @@
 For the separate vLLM 0.32 / SM101 qualification, MTP sweep, and concurrency measurements, see [the vLLM 0.32 report](docs/09-vllm032-sm101/README.md). Treat these separately from the historical llama.cpp results below.
 
 > 🚀 **Unified base · CUDA 13.2 shared base (2026-10-22)** — the common foundation for the
-> LLM / H3 / Image lines; **all future deployments build on it**. Method credited to
+> LLM / H3 / Image / vLLM lines; **all future deployments build on it**. Method credited to
 > [souyou233 (EnkiMa)](https://github.com/souyou233).
 >
 > - **Deployment doc**: <https://github.com/isenlink/thor-fp8-llm/blob/main/docs/11-cuda132-shared-base/README.md>
@@ -13,7 +13,8 @@ For the separate vLLM 0.32 / SM101 qualification, MTP sweep, and concurrency mea
 
 | Date | Milestone |
 |------|-----------|
-| **2026-10-22** | **🚀 CUDA 13.2 shared base (unified base)** — shared by the LLM / H3 / Image lines; **all future deployments build on it** → [docs/11-cuda132-shared-base](docs/11-cuda132-shared-base/README.md) |
+| **2026-10-25** | **vLLM 0.32 · CUDA 13 production deployment line** (thor05:8081 in production; power-loss runbook + JIT compile discipline + 100K acceptance baseline) → [docs/11-cuda132-shared-base/vllm032-line](docs/11-cuda132-shared-base/vllm032-line/vllm032-cu13-deployment.md) |
+| **2026-10-22** | **🚀 CUDA 13.2 shared base (unified base)** — shared by the LLM / H3 / Image / vLLM lines; **all future deployments build on it** → [docs/11-cuda132-shared-base](docs/11-cuda132-shared-base/README.md) |
 | 2026-10-22 | H3 line: CUDA 13 forward-compat successfully reproduced (Thor02:8189, ComfyUI cu130, 8-step LoRA **3.63×**) |
 | 2026-10-22 | vLLM 0.32 / SM101 qualification merged into main |
 | 2026-10-21 | vLLM 0.32 / SM101 optimization qualification (test node, not a production upgrade) |
@@ -89,7 +90,7 @@ experiments, and the measured data — to save the next person the same groping.
 
 ### ⚡ Prebuilt binary quick download
 
-**CUDA 13.2 shared base (2026-10-22, shared by the LLM / H3 / Image lines, method credited to [souyou233](https://github.com/souyou233))**
+**CUDA 13.2 shared base (2026-10-22, shared by the LLM / H3 / Image / vLLM lines, method credited to [souyou233](https://github.com/souyou233))**
 → Base **ModelScope**: <https://www.modelscope.cn/models/navyyang/thor-cuda132-shared>
 (forward-compat driver 134 MB + CUDA 13.2 runtime 1.17 GB + native `sm_110a` llama.cpp binary 81 MB
 + source snapshot + cross-compile toolchain + full SHA256SUMS; deployment doc in [docs/11-cuda132-shared-base](docs/11-cuda132-shared-base/README.md))
@@ -132,7 +133,7 @@ docs/
   05-system-tuning/       Hugepage pool expansion & persistence (**incl. grow-only proof, the 52/54/56G ladder, swap-first method, five-source persistence, the two-board 56G+LLM load-failure measurements**), overlay, power-loss recovery, temperature, **KV budget & 256K measurements**, **runtime memory-growth investigation (solved: prompt-cache default exceeds usable RAM)**
   06-benchmarks/          Per-stage benchmarks + community comparison, **benchmark methodology (three measurement traps + paired design)**, **speculative-decoding matrix**, **multi-slot concurrency + KV/prefix reuse measurements**, **Q4_K_M MoE throughput + 200K KV measurements**, secondhand Orin-X/Thor market survey
   10-power-loss-self-healing/ **Power-loss self-healing via the in-board vendor hook chain** — zero-touch recovery every boot (seven restore steps, two networking traps, hosting the local model service); ships an **[AI-executable reproduction guide](docs/10-power-loss-self-healing/AI-REPRODUCTION-GUIDE.md)** plus discover/restore/hook scripts ready to adapt
-  11-cuda132-shared-base/ **CUDA 13.2 shared base (2026-10-22)** — forward-compat driver + 13.2 runtime + native sm_110a llama.cpp binary (shared by the LLM/H3/Image lines, method credited to souyou233); binaries on ModelScope, this doc covers deployment steps / measurements / boundaries
+  11-cuda132-shared-base/ **CUDA 13.2 shared base (2026-10-22)** — forward-compat driver + 13.2 runtime + native sm_110a llama.cpp binary (shared by the LLM/H3/Image/vLLM lines, method credited to souyou233); binaries on ModelScope, this doc covers deployment steps / measurements / boundaries
 scripts/                  Board/host helper scripts (UART probe, GPU pool check, B3 kernel microbench suite)
 ```
 

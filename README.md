@@ -2,7 +2,7 @@
 
 本轮 vLLM 0.32 / SM101 独立测试、MTP 与并发验证见 [vLLM 0.32 优化记录](docs/09-vllm032-sm101/README.md)，与下方 llama.cpp 历史数据分别解读。
 
-> 🚀 **统一底座 · CUDA 13.2 共用底座（2026-10-22）** — LLM / H3 / Image 三条部署线的共同基础，
+> 🚀 **统一底座 · CUDA 13.2 共用底座（2026-10-22）** — LLM / H3 / Image / vLLM 四条部署线的共同基础，
 > **后续所有部署都基于此底座**。方法致谢 [souyou233 (EnkiMa)](https://github.com/souyou233)。
 >
 > - **部署文档**：<https://github.com/isenlink/thor-fp8-llm/blob/main/docs/11-cuda132-shared-base/README.md>
@@ -12,7 +12,8 @@
 
 | 日期 | 主要节点 |
 |------|---------|
-| **2026-10-22** | **🚀 CUDA 13.2 共用底座（统一底座）** — LLM / H3 / Image 三线共用，**后续所有部署基于此底座** → [docs/11-cuda132-shared-base](docs/11-cuda132-shared-base/README.md) |
+| **2026-10-25** | **vLLM 0.32 · CUDA 13 生产部署线**（thor05:8081 现役，断电重启 runbook + JIT 编译纪律 + 100K 验收基准）→ [docs/11-cuda132-shared-base/vllm032-line](docs/11-cuda132-shared-base/vllm032-line/vllm032-cu13-deployment.md) |
+| **2026-10-22** | **🚀 CUDA 13.2 共用底座（统一底座）** — LLM / H3 / Image / vLLM 四线共用，**后续所有部署基于此底座** → [docs/11-cuda132-shared-base](docs/11-cuda132-shared-base/README.md) |
 | 2026-10-22 | H3 线：CUDA13 前向兼容已成功复现（Thor02:8189，ComfyUI cu130，8 步 LoRA **3.63×**） |
 | 2026-10-22 | vLLM 0.32 / SM101 优化验证并入 main |
 | 2026-10-21 | vLLM 0.32 / SM101 优化验证（测试节点，未作生产升级） |
@@ -97,7 +98,7 @@ DRIVE Thor 的民间本地 LLM 部署资料几乎为零：官方只提供 DriveO
 
 ### ⚡ 预编译二进制快速下载
 
-**CUDA 13.2 共用底座（2026-10-22，LLM/H3/Image 三线共用，方法致谢 [souyou233](https://github.com/souyou233)）**
+**CUDA 13.2 共用底座（2026-10-22，LLM/H3/Image/vLLM 四线共用，方法致谢 [souyou233](https://github.com/souyou233)）**
 → 底座 **ModelScope**：<https://www.modelscope.cn/models/navyyang/thor-cuda132-shared>
 （forward-compat 驱动 134 MB + CUDA 13.2 runtime 1.17 GB + 原生 `sm_110a` llama.cpp 二进制 81 MB
 + 源码快照 + 交叉编译工具链 + 全件 SHA256SUMS；部署文档见 [docs/11-cuda132-shared-base](docs/11-cuda132-shared-base/README.md)）
@@ -143,7 +144,7 @@ docs/
   08-prebuilt-server/     **预编译服务端配套**：完整源码补丁集（pin 72797e89 + 12 补丁 + 4 新增 FP8 源文件）、交叉编译配方、启动脚本、128K/200K 实测读数、9 t/s 排障清单、精度自检（**二进制本体走网盘分发，见该目录 README**）
   09-thor-hardware-unlock/ **Thor 硬件解锁 / 保电（拆车件台架）**：断电睡眠循环的机制与方向性说明（双闸门模型、四种方法并列），只讲方向不含可照抄的操作参数
   10-power-loss-self-healing/ **断电自愈（板内钩子链方案）**：借用原厂开机脚本槽位实现零人工介入恢复（七个恢复步骤、网络修复两个坑、本地模型服务托管）；**含 [交给 AI 执行的复现手册](docs/10-power-loss-self-healing/AI-REPRODUCTION-GUIDE.md) + 探测/恢复/钩子三个可直接使用的脚本**
-  11-cuda132-shared-base/ **CUDA 13.2 共用底座（10-22）**：forward-compat 驱动 + 13.2 runtime + 原生 sm_110a llama.cpp 二进制（LLM/H3/Image 三线共用，方法致谢 souyou233）；底座走 ModelScope，本文档含部署步骤/实测/边界
+  11-cuda132-shared-base/ **CUDA 13.2 共用底座（10-22）**：forward-compat 驱动 + 13.2 runtime + 原生 sm_110a llama.cpp 二进制（LLM/H3/Image/vLLM 四线共用，方法致谢 souyou233）；底座走 ModelScope，本文档含部署步骤/实测/边界
 scripts/                  板端/主机实用脚本（串口探测、GPU 池检查、B3 kernel microbench 全家桶）；
                           tcgen05 实验线的代码级整理包在 `tcgen05` 分支（实验未定论，不进主线）
 ```
