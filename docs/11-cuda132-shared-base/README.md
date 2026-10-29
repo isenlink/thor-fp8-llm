@@ -19,6 +19,10 @@ CUDA 12 时代的内核驱动上跑起来。souyou233 用它解开 `comfy_kitche
 模型与启动脚本——这是多线对齐的关键。vLLM 0.32 生产部署线实录见
 [vllm032-line/vllm032-cu13-deployment.md](vllm032-line/vllm032-cu13-deployment.md)。
 
+> **只想先搭 CUDA 13 支持、不带任何框架？** 读
+> [cuda13-base.md](cuda13-base.md)（框架无关版：compat+runtime 落盘 → dev 符号链接 →
+> `minimal_cuda` 探针 30 秒自检 → 之后再按需搭 llama.cpp / vLLM / ComfyUI）。
+
 > **H3 线现状（2026-10-22）**：CUDA 13 前向兼容已成功复现（Thor02，
 > ComfyUI 0.38 + torch 2.13+cu130 + comfy_kitchen 0.2.39，端口 8189）——8 步生产
 > LoRA 同口径 289.4 s/段 vs sd.cpp 1049 s/段 = **3.63×**，20 段整批 19/20 过门禁。
