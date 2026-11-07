@@ -12,6 +12,7 @@
 
 | 日期 | 主要节点 |
 |------|---------|
+| **2026-11-07** | **vLLM 0.32 cu13 线增量：三臂投机 + 全模态 + 256K 验收**（AR/MTP/DFlash2 三臂全表，≥200K DFlash2 反超 MTP +23%；文字+视觉多模态两臂过；池 50G；256K 起服 5min）→ [docs/11-cuda132-shared-base/vllm032-line](docs/11-cuda132-shared-base/vllm032-line/vllm032-cu13-deployment.md) |
 | **2026-10-25** | **vLLM 0.32 · CUDA 13 生产部署线**（thor05:8081 现役，断电重启 runbook + JIT 编译纪律 + 100K 验收基准）→ [docs/11-cuda132-shared-base/vllm032-line](docs/11-cuda132-shared-base/vllm032-line/vllm032-cu13-deployment.md) |
 | **2026-10-22** | **🚀 CUDA 13.2 共用底座（统一底座）** — LLM / H3 / Image / vLLM 四线共用，**后续所有部署基于此底座** → [docs/11-cuda132-shared-base](docs/11-cuda132-shared-base/README.md) |
 | 2026-10-22 | H3 线：CUDA13 前向兼容已成功复现（Thor02:8189，ComfyUI cu130，8 步 LoRA **3.63×**） |

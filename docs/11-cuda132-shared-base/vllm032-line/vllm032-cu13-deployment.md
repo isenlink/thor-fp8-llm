@@ -3,6 +3,8 @@
 > 定位：本文是 [CUDA 13.2 共用底座](README.md) 之上的 **vLLM 0.32 部署线**，补齐
 > [09-vllm032-sm101](../09-vllm032-sm101/README.md)（CUDA 12.8 资格验证线）之后的
 > 生产化环节——栈落盘布局、启动脚本、JIT 编译纪律、断电重启 runbook、验收基准。
+> **2026-11-07 增量**：三臂投机（AR/MTP/DFlash2）+ 文字视觉全模态 + 256K 验收
+> （现役形态见文末「11-07 增量」节）。
 > 全部命令与数字来自 2026-10-24/25 在一块 DRIVE Thor（p3960 / Tegra264，sm_101，
 > sm_101，14 SM，统一内存 ~58G）上的实机操作与验收，部署链**只依赖板上持久分区，不依赖
 > 任何外置存储**（无 USB SSD 也能完整复现）。本文中 `sda1` 仅以**反例**出现
@@ -56,11 +58,12 @@ tmp 类目录意味着每次断电重编，首次重编还会撞上「并发编�
 
 ### A0 · 前置：大页池
 
-KV cache 走 2MiB 大页，池容量 23552 页（=46G）。设置与持久化方法见
-[hugepage-pool](../05-system-tuning/hugepage-pool.md)。
+KV cache 走 2MiB 大页。10-24/25 基线为 23552 页（=46G）；**11-07 起 256K 验收口径
+升级为 25600 页（=50G）**——池即 CUDA 眼里的全部「显存」，256K KV 预算按 50G 算。
+设置与持久化方法见 [hugepage-pool](../05-system-tuning/hugepage-pool.md)。
 
 ```bash
-grep HugePages_Total /proc/meminfo   # 判据：必须 = 23552（重启后为 0 就按上文重设）
+grep HugePages_Total /proc/meminfo   # 判据：= 25600（11-07 起；重启后为 0 就按上文重设）
 ```
 
 ### A1 · 栈落盘
@@ -219,7 +222,7 @@ curl -s http://127.0.0.1:8081/v1/chat/completions \
 | 缓存焐热后自愈 | `.ninja_log` 哈希自洽后永久 no-work-to-do | 预热 fp8/fp4 两个内核 `.so` 后交付 |
 | 路径/环境变化全量重编（10/25 实证） | build.ninja 指纹含 sys.prefix 与绝对路径；软链欺骗无效 | 实体落最终路径；接受一次 30–60 分钟重编 |
 
-## 实测基准（thor05，RadixArk-Qwen3.8-27B-NVFP4，MTP4，批=1）
+## 实测基准（10-24/25 基线，MTP4，批=1；11-07 现役形态见下节）
 
 | 项 | 实测 | 备注 |
 |---|---|---|
@@ -234,20 +237,103 @@ curl -s http://127.0.0.1:8081/v1/chat/completions \
 同栈 A/B（10-25 run7，同题同参同 MTP）：RadixArk decode 45.3 tok/s vs
 标准 HF 打包 40.6 tok/s（快 ~10%），prefill 打平——现役选型不换。
 
+## 11-07 增量：三臂投机 + 全模态 + 256K 验证（现役形态）
+
+2026-11-07 全流程重部署并扩展验收（交付包 = 模型库 `qwen38-27b-nvfp4-serve-20261107/`，
+含 DEPLOY.md + AOT 模块 + jit-packages 回填包 + 起服/测试脚本 + testdata 全套原始数据）。
+与 10-24/25 基线的四个变化：**投机从 MTP4 扩为三臂（AR / MTP n=4 / DFlash2 q=7）、
+去掉 `--language-model-only`（文字+视觉全模态）、前缀缓存关 + AutoTuner 关、
+池 46G→50G**。AOT 直载（铁律：禁板上 JIT）：flashinfer `fp8_gemm_cutlass.so` /
+`fp4_gemm_cutlass.so` 预编译注入 `flashinfer/data/aot/`，`try_load` 命中即不进 JIT。
+
+### 口径（与 10-30 基线对齐）
+
+50G 大页池（25600×2MiB）/ util 0.90 / temp=0 / ignore_eos / max_tokens=128 /
+裸补全流式 / 单发 / 板上本地跑（LAN 客户端会被中间设备掐断长空闲流，超长点必须板上本地）。
+
+### KV cache（起服日志 `GPU KV cache size` 实测）
+
+| 臂 | 全模态 KV | 达标线 |
+|---|---|---|
+| mtp（n=4） | 618,542 tokens | ≥550,000 |
+| dflash（DFlash2 q=7） | 368,028 tokens | ≥350,000 |
+
+vision 塔成本：mtp −4,418 tok（−0.16G，几乎无损）；dflash −66,418 tok（−2.46G，
+草稿栈放大）。全模态前（语言 only）KV：mtp 622,960 / dflash 434,446。
+
+### decode t/s 全表（temp=0，ignore_eos，128 tok；短点 3 轮/中点 2 轮/长点 1 轮取均值）
+
+| 实测 ctx | AR | MTP n=4 | DFlash2 q=7 |
+|---|---|---|---|
+| 1,016 | 13.86 | 37.20 | 35.66 |
+| 7,976 | 13.71 | 40.38 | 38.73 |
+| 31,989 | 13.19 | 32.55 | 31.35 |
+| 63,947 | 12.55 | 32.73 | 29.05 |
+| 127,864 | 11.45 | 30.04 | 24.53 |
+| 199,842 | 10.42 | 24.13 | **29.75** |
+| 255,754 | 未测 | 24.24 | **28.19** |
+
+prefill：1K ≈1340–1861 t/s；200K ≈380–411 t/s；256K ≈315–331 t/s
+（TTFT 200K ≈486–526s；256K ≈773–812s）。
+
+**长上下文结论：128K 以内 MTP 最快；≥200K DFlash2 反超（200K +23%、256K +16.3%）
+且 prefill 双轴全胜（256K：dflash 331 vs mtp 315 t/s）。10-24 的 192K 死锁缺陷
+在 11-07 栈上未复现（dflash 192K 实测 411 t/s prefill / 30.95 t/s decode 完整跑通；
+mtp 192K 未复测，缺陷是否消除未定）。**
+
+### 投机解码健康
+
+- mtp acceptance length ≈ 3.34（n=4，≈84% 接受率，1K ctx）
+- dflash 冷启动首读 1.00 是假象，连发数请求后再读：1K ctx ≈3–4 → 长 ctx ≈4.57
+  （HF H200 官方 5.46 的 84%）
+- 三臂无损性：greedy checksum 严格相等在 tuner 开的 boot 间不成立（tactic→浮点归约序
+  分叉）；无损性以投机接受机制（数学无损）+ 臂内自洽为准；tuner 关闭后此分歧源消除
+
+### 多模态验收（文字+视觉）
+
+发真实照片 + 中文提问（temp=0，max_tokens=80），两臂均准确描述人物着装/坐姿/发型；
+`prompt_tokens` ≈1098 两臂一致（视觉编码确定性 ✓）。判分看描述内容——模型输出常带
+思考前缀（「用户要求……我要……」），属正常行为。
+
+### 11-07 配置坑位（新增三条，其余沿用上文坑位表）
+
+| 症状 | 根因 | 处置 |
+|---|---|---|
+| 起服 Errno 28 /home 满 | Triton **视觉**内核缓存写默认路径（去 language-model-only 后激活） | 第四缓存根 `TRITON_CACHE_DIR` 指持久分区 |
+| 起服 40–50 分钟 + 连环 OOM | AutoTuner 画像风暴；且其缓存持久化机制在 0.32 wrapper × flashinfer 0.7 API 下**静默失效**（hash 目录建了从不写 json） | `--kernel-config '{"enable_flashinfer_autotune": false}'` 永久关闭，放弃缓存路线 |
+| prefill 超线性变慢/超时（256K 点位 >40min timeout 实测） | prefix cache 缓存块与大请求互赶 | `--no-enable-prefix-caching` |
+
+256K 两轮失败 → 第三轮（tuner 关 + 前缀缓存关）双臂全过。**起服 5 分钟内完成**
+（对比 tuner 开的 boot ~50min 画像风暴）。
+
+### 与 10-30 基线的对照（速度提升归因）
+
+10-30 基线（同板同模型旧配置：tuner 开 + 前缀缓存开 + JIT kernel 缺失）：
+prefill 1534→109、decode 36.3→10.6（长上下文崩塌）。11-07 线 prefill **3.8×**
+（JIT sm_110a kernel 补齐，AOT 直载）、200K decode **2.3×**（投机长上下文崩塌修复：
+seqs=1 / 前缀缓存关 / KV fp8）。
+
 ## 与其它线的边界
 
 - 本线 `VLLM_GDN_DECODE_KERNEL=cuda` 配 `qwen3_5` 架构（RadixArk/HF 打包）；
   `qwen3_next` 架构（thor04 线 dense 混合检查点）需要 triton 内核 + 出树插件做
   dense/非 mRoPE/视觉键残留兼容，见 docs/09 的「已验证的组成」节，两线勿混；
-- 端口契约：8081 = 本线；8082 = llama.cpp 对照工具线（可停）；
-- 验收口径：上下文上限 100K；192K 死锁为已知栈缺陷仅留档。
+- 端口契约：8081 = 本线（10-24/25 基线形态）；11-07 现役三臂/全模态形态在 8080
+  面向局域网（`--host 0.0.0.0`）；8082 = llama.cpp 对照工具线（可停）；
+- 验收口径：10-24/25 基线 = 100K；**11-07 起 = 256K（dflash/mtp 双臂 255,754 tok
+  完整跑通）**。10-24 的 192K 死锁为旧栈已知缺陷仅留档（11-07 栈上 dflash 192K 已跑通，
+  mtp 未复测）。
 
 ## 复现核对清单（给照做的人）
 
-- [ ] `grep HugePages_Total` = 23552
+- [ ] `grep HugePages_Total` = 25600（11-07 起；10-24/25 基线为 23552）
 - [ ] venv/toolchain/bin 包装脚本内嵌路径与目标机布局一致（A3 判据 0 命中）
 - [ ] cu13/lib64 与 libcudart.so 开发链接在位（A2 判据）
 - [ ] 启动用 `setsid`，不用 nohup
 - [ ] 就绪 = `/v1/models` 200 + 大页 free ≈2475 + 本轮日志 0 ERROR
 - [ ] 冒烟 max_tokens ≥512 且看 `finish_reason` 与 content 非空
 - [ ] 部署链零外置存储依赖：`grep -r sda1` 于启动脚本与栈目录 = 0 命中
+- [ ] （11-07 形态）AOT gemm 两 `.so` 已注入 `flashinfer/data/aot/`（缺了会进板上 JIT，
+      违反禁 JIT 铁律）；`TRITON_CACHE_DIR` 等四缓存根全指持久分区；
+      `enable_flashinfer_autotune=false` 且日志无 `[AutoTuner]: Tuning` 行；
+      `--no-enable-prefix-caching` 在位

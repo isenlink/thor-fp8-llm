@@ -13,6 +13,7 @@ For the separate vLLM 0.32 / SM101 qualification, MTP sweep, and concurrency mea
 
 | Date | Milestone |
 |------|-----------|
+| **2026-11-07** | **vLLM 0.32 cu13 line increment: three-arm speculation + full multimodal + 256K acceptance** (AR/MTP/DFlash2 full ladder, DFlash2 overtakes MTP by +23% at ≥200K; text+vision multimodal passed on both arms; 50G pool; 5-min cold start at 256K config) → [docs/11-cuda132-shared-base/vllm032-line](docs/11-cuda132-shared-base/vllm032-line/vllm032-cu13-deployment.md) |
 | **2026-10-25** | **vLLM 0.32 · CUDA 13 production deployment line** (thor05:8081 in production; power-loss runbook + JIT compile discipline + 100K acceptance baseline) → [docs/11-cuda132-shared-base/vllm032-line](docs/11-cuda132-shared-base/vllm032-line/vllm032-cu13-deployment.md) |
 | **2026-10-22** | **🚀 CUDA 13.2 shared base (unified base)** — shared by the LLM / H3 / Image / vLLM lines; **all future deployments build on it** → [docs/11-cuda132-shared-base](docs/11-cuda132-shared-base/README.md) |
 | 2026-10-22 | H3 line: CUDA 13 forward-compat successfully reproduced (Thor02:8189, ComfyUI cu130, 8-step LoRA **3.63×**) |
