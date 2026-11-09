@@ -12,6 +12,7 @@
 
 | 日期 | 主要节点 |
 |------|---------|
+| **2026-11-09** | **第三条引擎线：tqLLM (TurboQuant) 交叉编译移植 Thor 成功**（官方不支持 Thor，零源码改动 sm_110a 交叉编译上板一次成功；Qwen3.8-27B-TQ_L 200K decode 6.28→15.50 t/s（DFlash2 2.47×），草稿器输出逐字一致；已向上游提 PR [turbo-tan/tqllm#32](https://github.com/turbo-tan/tqllm/pull/32)）→ [docs/06-benchmarks/thor04-tqllm-turboquant-200k-2026-11-09.md](docs/06-benchmarks/thor04-tqllm-turboquant-200k-2026-11-09.md) |
 | **2026-11-07** | **vLLM 0.32 cu13 线增量：三臂投机 + 全模态 + 256K 验收**（AR/MTP/DFlash2 三臂全表，≥200K DFlash2 反超 MTP +23%；文字+视觉多模态两臂过；池 50G；256K 起服 5min）→ [docs/11-cuda132-shared-base/vllm032-line](docs/11-cuda132-shared-base/vllm032-line/vllm032-cu13-deployment.md) |
 | **2026-10-25** | **vLLM 0.32 · CUDA 13 生产部署线**（thor05:8081 现役，断电重启 runbook + JIT 编译纪律 + 100K 验收基准）→ [docs/11-cuda132-shared-base/vllm032-line](docs/11-cuda132-shared-base/vllm032-line/vllm032-cu13-deployment.md) |
 | **2026-10-22** | **🚀 CUDA 13.2 共用底座（统一底座）** — LLM / H3 / Image / vLLM 四线共用，**后续所有部署基于此底座** → [docs/11-cuda132-shared-base](docs/11-cuda132-shared-base/README.md) |
@@ -75,6 +76,7 @@ DRIVE Thor 的民间本地 LLM 部署资料几乎为零：官方只提供 DriveO
 | 项目 | 结果 |
 |------|------|
 | llama.cpp 交叉编译 | 0.4.0-dev 全套 91 个二进制，含 CUDA sm_101a 后端 ✅ |
+| **11-09 tqLLM (TurboQuant) 移植** | 官方不支持 Thor，**零源码改动**交叉编译（sm_110a）上板一次成功；Qwen3.8-27B-TQ_L 200K decode **6.28→15.50 t/s**（DFlash2 2.47×，接受率 30.1%），prefill 350 t/s，草稿器输出逐字一致；⚠️ compat 包必须用 compat_orin（native-driver 自带 libc 在 cuInit 段错误）→ [详见](docs/06-benchmarks/thor04-tqllm-turboquant-200k-2026-11-09.md) |
 | Qwen3-4B Q4_K_M 基准 | pp128 1516 tok/s / tg64 40.2 tok/s（ngl=99 全 GPU） |
 | Qwen3.8-27B NVFP4 | decode **26.48 tok/s**（超社区 25.89 目标），accuracy 85.9% |
 | **生产模型精度回归（35 题程序判分）** | uncensored NVFP4-mixed 34/35 → **官方基座 Unsloth-NVFP4-Q8 35/35**（跳步算术题修复；速度 −15% 换精度，26.2 t/s）→ [详见](docs/06-benchmarks/thor04-model-switch-unsloth-nvfp4q8-2026-09-18.md) |
@@ -140,7 +142,7 @@ docs/
   03-model-conversion/    FP8 → GGUF 转换三层障碍（架构名分发/分片命名/numpy ABI）+ 模型文件台账
   04-nvfp4-optimization/  NVFP4 量化路线实验记录（含失败实验 MTP K7、B3 kernel 级优化决策链、microbench 拆解、正确性事故修复链、定案成绩、后续否决路线与 GPU 死锁事故纪律、多板并行测试准备、**投机草稿配方（深度甜点/混合量化/内容类型依赖）**、**DFlash2 结论撤销**）
   05-system-tuning/       GPU 大页池扩容与固化（**含"只能扩不能缩"的反证 + 52/54/56G 阶梯、swap 先行、五源头固化、56G 档两板 LLM 拉起失败实测**）、overlay 持久化方法论、断电自愈架构、温度管理、**KV 预算与 256K 实测**、**运行期内存增长调查（已定案：prompt cache 上限 > 可用内存）**、**llama-server 部署配置速查（Q4_K_M MoE 实例）**、**MTP 投机解码启用（Qwen3.5-MoE 实测）** |
-  06-benchmarks/          各阶段基准数据与复现命令（含 200K 基准台账）、**基准方法论（三个口径陷阱 + 配对设计）**、**投机解码全矩阵**、**多 slot 并发 + KV/前缀复用实测**、**Q4_K_M MoE 吞吐与 200K KV 实测**、社区同款板实测汇总、**二手 Orin-X/Thor 捡漏市场调研（丝印对照/行情/千问实测速度转引）**
+  06-benchmarks/          各阶段基准数据与复现命令（含 200K 基准台账）、**基准方法论（三个口径陷阱 + 配对设计）**、**投机解码全矩阵**、**多 slot 并发 + KV/前缀复用实测**、**Q4_K_M MoE 吞吐与 200K KV 实测**、社区同款板实测汇总、**二手 Orin-X/Thor 捡漏市场调研（丝印对照/行情/千问实测速度转引）**、**tqLLM (TurboQuant) 交叉编译移植 Thor + 200K 实测（11-09，第三条引擎线）**
   07-hermes-agent/        在板上部署 Agent：**全量落非易失分区 + 脏断电自愈**、两条安装路径对照、两条硬约束、等价验收
   08-prebuilt-server/     **预编译服务端配套**：完整源码补丁集（pin 72797e89 + 12 补丁 + 4 新增 FP8 源文件）、交叉编译配方、启动脚本、128K/200K 实测读数、9 t/s 排障清单、精度自检（**二进制本体走网盘分发，见该目录 README**）
   09-thor-hardware-unlock/ **Thor 硬件解锁 / 保电（拆车件台架）**：断电睡眠循环的机制与方向性说明（双闸门模型、四种方法并列），只讲方向不含可照抄的操作参数
