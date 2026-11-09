@@ -53,6 +53,13 @@ tqLLM 官方不支持 Thor（仅 RTX 30/40/50、GB10/DGX Spark、Mac），但 x8
 ### 模型与权重（sha256 已核验）
 
 - 主模型：`Qwen3.8-27B-TQ_L.gguf`（14,721,469,184 B），来源 HF `YTan2000/Qwen3.8-27B-TQ`
+- **量化级别（AI02-Z 裸解析 GGUF 张量表确认，2026-11-09 晚，Gitea `444ad32`）**：
+  **整体 4.308 bpw ≈ 4-bit 级**——主力 TQ4 格式（GGUF type 300，4.125 bpw：128 权重块 +
+  128 点旋转 + 16 级码本 + 每 128 一个 FP16 scale）400 个张量 / 24.33B 参数（占 89%）；
+  其余 embedding 4.5 bpw（1.27B）、output 等 7 个张量 6.56 bpw（1.69B）、
+  96 个 Gated DeltaNet `ssm_alpha`/`ssm_beta` 保 FP16（旋转基下需高精度）、norms F32。
+  对照：Q4_K_M ≈ 4.85 bpw、AWQ-INT4 ≈ 4.2-4.4 bpw ⇒ **TQ_L 比常见 Q4_K_M 还低约半 bit，
+  属激进 4-bit 档**；质量参考：上游自报 TQ4_L vs BF16 KLD 0.022
 - 草稿器：`drafters/Qwen3.8-27B-DFlash2-TQ3.gguf`（785,487,488 B）
 - 草稿词表：`mtp-vocab/atx_65536.txt`（65,536 深度草稿词表）
 - TQ 格式说明：TQ_L 为 tqLLM 自研 TurboQuant 格式（TQ3/TQ4 变体），KV 缓存走引擎默认
@@ -133,7 +140,9 @@ setsid nohup env LD_LIBRARY_PATH=$C:$R/cuda/lib \
 - 本线 = **第三条引擎线**（llama.cpp 线 / vLLM 线 / tqLLM 线），2026-11-09 一次性移植验证，
   未作生产部署（测试后服务已停）
 - 同模型（Qwen3.8-27B）跨引擎 200K 档对照（不同量化/不同引擎，仅供量级参考，不可直比）：
+  - vLLM 0.32 cu13 线（NVFP4 + DFlash2）：200K decode **33.4 t/s（11-09 现役服务实测，prompt 200,041 tok）**；11-07 文档口径 29.75
   - llama.cpp 线（NVFP4 + DFlash2）：200K decode 22 t/s（T4/ARES 定案版，见 README）
-  - vLLM 0.32 cu13 线（NVFP4 + DFlash2）：≥200K 档见 docs/11 vllm032-line
-  - tqLLM 线（TQ_L + DFlash2）：200K decode 15.50 t/s（本文）
+  - tqLLM 线（TQ_L 4.31 bpw + DFlash2）：200K decode 15.50 t/s（本文）
+  - ⚠️ 量化口径：vLLM 线 NVFP4（~4.25 bpw）与 tqLLM 线 TQ_L（4.31 bpw）**同为 4-bit 级**，
+    200K 档 33.4 vs 15.5 的差距是引擎/格式效率差，不是量化深度差
 - tqLLM 的 TQ 量化格式与 llama.cpp GGUF / vLLM safetensors 互不通用，模型权重需单独转换
